@@ -16,6 +16,13 @@
 <title>Voxelent - Demo Brain</title>
 <script type='text/javascript' id='code-js'>
 var animation;
+var list;
+var view;
+var maxSection, minSection;
+var model;
+var camera;
+var actor;
+var axis;
 
 	function padToFour(number) {
 	  if (number<=9999) { number = ("000"+number).slice(-4); }
@@ -30,7 +37,7 @@ var animation;
 	    vxl.api.loadLUTS('assets/tables');
 	    
 	
-	    var view 	= vxl.api.setup('view-1');  // as there are no other views, this one becomes vxl.c.view
+	    view 	= vxl.api.setup('view-1');  // as there are no other views, this one becomes vxl.c.view
 	    vxl.c.view.setBackgroundColor(0.0,0.0,0.0); // background to black
 	    var gui = new vxlGUI(vxl.c.view); //and can be used here
 	    
@@ -39,12 +46,15 @@ var animation;
 	    // set up list
 	   	
 	    
-	   	var list = new Array("anatomy_xyz_mapped_to_rgb.json",
+	   	list = new Array("brain.json",
+	   			"anatomy_xyz_mapped_to_rgb.json",
 	   			"map_anatomy_to_x.json",
 	   			"map_anatomy_to_y.json",
 	   			"map_anatomy_to_z.json",
-	   			"map_anatomy_to_M1.json","map_anatomy_to_M2.json",
-	   			"map_anatomy_to_M3.json","map_anatomy_to_M4.json",
+	   			"map_anatomy_to_M1.json",
+	   			"map_anatomy_to_M2.json",
+	   			"map_anatomy_to_M3.json",
+	   			"map_anatomy_to_M4.json",
 	   			"map_anatomy_to_M5.json",
 	   			"map_anatomy_to_M1_M2_M3.json",
 	   			"map_anatomy_to_M1_M2_M4.json",
@@ -69,6 +79,39 @@ var animation;
 
 
 	   	);
+	  //3. Define animation map
+		var map = {
+			frame1 : ["anatomy_xyz_mapped_to_rgb.json", "brain.json"],
+			frame2 : ["map_anatomy_to_x.json", "brain.json"],
+			frame3 : ["map_anatomy_to_y.json", "brain.json"],
+			frame4 : ["map_anatomy_to_z.json", "brain.json"],
+			frame5 : ["map_anatomy_to_M1.json", "brain.json"],
+			frame6 : ["map_anatomy_to_M2.json", "brain.json"],
+			frame7 : ["map_anatomy_to_M3.json", "brain.json"],
+			frame8 : ["map_anatomy_to_M4.json", "brain.json"],
+			frame9 : ["map_anatomy_to_M5.json", "brain.json"],
+			frame10 : ["map_anatomy_to_M1_M2_M3.json", "brain.json"],
+			frame11 : ["map_anatomy_to_M1_M2_M4.json", "brain.json"],
+			frame12 : ["map_anatomy_to_M1_M2_M5.json", "brain.json"],
+			frame13 : ["map_anatomy_to_M1_M3_M4.json", "brain.json"],
+			frame14 : ["map_anatomy_to_M1_M3_M5.json", "brain.json"],
+			frame15 : ["map_anatomy_to_M1_M4_M5.json", "brain.json"],
+			frame16 : ["map_anatomy_to_M2_M3_M4.json", "brain.json"],
+			frame17 : ["map_anatomy_to_M2_M3_M5.json", "brain.json"],
+			frame18 : ["map_anatomy_to_M2_M4_M5.json", "brain.json"],
+			frame19 : ["map_anatomy_to_M3_M4_M5.json", "brain.json"],
+			frame20 : ["manifold_1_2_3_to_anatomy_1_2_3.json"],
+			frame21 : ["manifold_1_2_4_to_anatomy_1_2_3.json"],
+			frame22 : ["manifold_1_2_5_to_anatomy_1_2_3.json"],
+			frame23 : ["manifold_1_3_4_to_anatomy_1_2_3.json"],
+			frame24 : ["manifold_1_3_5_to_anatomy_1_2_3.json"],
+			frame25 : ["manifold_1_4_5_to_anatomy_1_2_3.json"],
+			frame26 : ["manifold_2_3_4_to_anatomy_1_2_3.json"],
+			frame27 : ["manifold_2_3_5_to_anatomy_1_2_3.json"],
+			frame28 : ["manifold_2_4_5_to_anatomy_1_2_3.json"],
+			frame29 : ["manifold_3_4_5_to_anatomy_1_2_3.json"]
+			
+		};
 	    
 	    /*
 	    var list = new Array();
@@ -78,15 +121,16 @@ var animation;
 	    	list.push("cortex"+padToFour(i)+".json");
 	    }*/
 	    
-	    
+	    /*
 	    var map = [];
 	    var frame;
 	    for (i = 1; i < (list.length + 1); i++) {
    	    	frame = new Array();
 	    	frame.push(list[i-1]);
+	    	frame.push(list[0]);
 	    	map["frame"+i] = frame;
 	    }
-	   
+	   */
 	    
 	    $('#frame-slider-id').slider({max:list.length+1});
 	  
@@ -95,6 +139,11 @@ var animation;
 	    // default to vxl.pointSize =  10
 	    vxl.pointSize =  10;
    
+	    
+	    camera = vxl.c.camera;
+	    //camera.setType(vxl.def.camera.type.TRACKING);
+	    //camera.setTrackingMode(vxl.def.camera.tracking.ROTATIONAL);
+	    
 	    //Create the animation object
 		animation = new vxlFrameAnimation(map);
 		
@@ -130,7 +179,7 @@ var animation;
 	function handleEvent(event, src){
 		if (event == vxl.events.SCENE_UPDATED) {
             var loaded = src._actors.length;
-            $('#status').html('Objects loaded: ' + loaded + ' out of 60');
+            $('#status').html('Objects loaded: ' + loaded + ' out of '+ list.length);
         }
 		else if (event == vxl.events.MODELS_LOADED){
         	vxl.api.setLookupTable('hsv');
@@ -146,7 +195,12 @@ var animation;
             }
             
              setupLUTSelector();  
+             vxl.api.getActorByName(list[0]).setVisualizationMode(vxl.def.actor.mode.WIREFRAME);
+             vxl.api.getActorByName(list[0]).setOpacity(0.1);
              
+             model = vxl.api.getActorByName(list[1]).model;
+     	     //camera.follow(vxl.api.getActorByName(animation.actorByFrameMap[1][0])); //from the current scene);
+             setupDatasetSelector();
              updateSliceSegments();
              // start animation
             // animation.start(0.5);
@@ -172,8 +226,38 @@ var animation;
     $('#lutPicker').change(function(){
         vxl.api.setLookupTable($('#lutPicker').val());
     });
-    
+        
  }; 
+ 
+ /**
+  * Creates the dropdown selector from which lookup tables can be selected
+  */
+ function setupDatasetSelector(){
+ 
+	 var options = ",";
+	 
+	 for (var i=1;i<list.length;i+=1){
+	     options += '<option value=\"'+(i)+'\">'+list[i].replace(/_/g," ").replace(".json","")+'</option>';
+	 }
+	 
+	 $('#datasetPicker').html(options);
+	 $('#datasetPicker').change(function(){
+	 	var v = parseInt($('#datasetPicker').val());
+
+	     if (animation.isValidFrame(v)) {
+	     	animation.stop();
+	     	try {
+	     		animation.setFrame(v);
+	     	} catch (e) {
+	     		
+	     	}
+			// update model reference 
+			model = vxl.api.getActorByName(animation.actorByFrameMap[animation.activeFrame][0]).model;
+	     	updateSliceSegments();
+	     }
+	     
+	 });
+ };
 </script>
         
 <style type="text/css">
@@ -204,7 +288,7 @@ var animation;
 .overlay select{
    background: #333;
    color: #BCBCBC;
-   width: 100px;
+   width: 180px;
    padding: 5px;
    font-size: 13px;
    height: 30px;
@@ -228,55 +312,32 @@ var animation;
       <p id='pan' > Shift + Left Click: panning</p>
       <p id='roll'>Ctrl + Shift + Left Click: roll</p>
       <p>
-          Opacity: <div id='op-slider-id'> </div>
-      </p>
-      <p>
           Point Size: <div id='pointsize-slider-id'> </div>
       </p>
-      <p id='frame'>select<br></p>
       <p>
-          Time segment: <div id='frame-slider-id'> </div>
+          Dataset<select id='datasetPicker'></select>
       </p>
       <p>
-          Slice axis: <select id='axisPicker' onChange="changeAxis();">
+          Section axis<select id='axisPicker' onChange="changeAxis();">
           <option value=-1>none</option>
           <option value=0>x axis</option>
           <option value=1>y axis</option>
           <option value=2>z axis</option>
           </select>
-         
+      </p>
+      <!-- <p><button type="button" onClick="resetView(axis);">Snap to Section</button></p>
+      <p> -->
+          <div id='slice'>Section</div><div id='slice-slider-id'> </div>
       </p>
       <p>
-          slice: <div id='slice-slider-id'> </div>
+          Intensity Map<select id='lutPicker'></select>
       </p>
-      <select id='lutPicker'></select>
+      
     </div>  
 </div>
 
 <script>
 //JQuery UI code
-
-function changeOpacity(){
-    var v = $('#op-slider-id').slider('value');
-    
-    var gl = vxl.c.view.renderer.gl;
-    
-    if (v < 1){
-        //gl.disable(gl.DEPTH_TEST);
-        gl.enable(gl.BLEND);
-        gl.enable(gl.CULL_FACE);
-        gl.cullFace(gl.BACK);
-        vxl.api.setUniformDefault('lambert','uLightDiffuse',[0.5,0.5,0.5,1.0]);
-    }
-    else{
-        //gl.enable(gl.DEPTH_TEST);
-        gl.disable(gl.BLEND);
-        gl.disable(gl.CULL_FACE);
-        vxl.api.setUniformDefault('lambert','uLightDiffuse',[1.0,1.0,1.0,1.0]);
-    }
-    
-    vxl.api.setPropertyForAll('opacity', v);    
-}
 
 function changePointSize(){
 	var v = $('#pointsize-slider-id').slider('value');
@@ -285,47 +346,29 @@ function changePointSize(){
 
 }
 
-function changeFrame(){
-	var v = $('#frame-slider-id').slider('value');
-
-    if (animation.isValidFrame(v)) {
-    	animation.stop();
-    	try {
-    		animation.setFrame(v);
-    	} catch (e) {
-    		
-    	}
-    	var actorname = animation.actorByFrameMap[animation.activeFrame][0];
-    	var framename = actorname.replace(/_/g," ").replace(".json","");
-    	updateSliceSegments();
-    	$('#frame').html("frame: "+framename );
-    }
-    return true;
-}
-
 function updateSliceSegments() {
 	if (typeof animation != 'undefined') {
-		var axis = parseInt($('#axisPicker').val());
 		if (axis > -1) {
-			var actorname = animation.actorByFrameMap[animation.activeFrame][0];
 			// get actor bounding box
-			var model = vxl.api.getActorByName(actorname).model;
-			
-			$('#slice-slider-id').removeAttr('disabled');
-			$('#slice-slider-id').slider({max:model.bb[axis+3], min:model.bb[axis], enabled: true});
+			maxSection = model.bb[axis+3];
+			minSection = model.bb[axis];
+			$('#slice-slider-id').slider('enable');
+			$('#slice-slider-id').slider({max:maxSection, min:minSection, enabled: true});
+			changeSlice();
 		} else {
-			$('#slice-slider-id').attr('disabled', 'disabled');
+			$('#slice').html("Section");
+			$('#slice-slider-id').slider('disable');
 		}
 	}
 }
 
 function  changeSlice(){
 	var v = $('#slice-slider-id').slider('value');
+	$('#slice').html("Section ("+(v-minSection+1)+"/"+(maxSection-minSection+1)+ ")");
 
 	var actorname = animation.actorByFrameMap[animation.activeFrame][0];
    	// get actor bounding box
-   	var model = vxl.api.getActorByName(actorname).model;
-   	var axis = parseInt($('#axisPicker').val());
+   	model = vxl.api.getActorByName(actorname).model;
    	for (i = 0; i < (model.vertices.length + 1); i++) {
     	if (model.vertices[i] < -10000) {
    			model.vertices[i] = model.vertices[i] + 12000;
@@ -333,7 +376,7 @@ function  changeSlice(){
     }
    	
    	if (axis > -1) {
-   		for (i = axis; i < (model.vertices.length - 1); i=i+3) {
+   		for (i = axis; i < (model.vertices.length); i=i+3) {
    	    	if (model.vertices[i] != v) {
    	    		model.vertices[i] = model.vertices[i] - 12000;
    	   		}
@@ -344,13 +387,53 @@ function  changeSlice(){
 }
 
 function changeAxis() {
+	axis = parseInt($('#axisPicker').val());
+	resetView(axis);
 	updateSliceSegments();
 	changeSlice();
 }
 
+function resetView(axisIndex) {
+	
+	var maxDim = Math.max(model.bb[3] - model.bb[0], model.bb[4] - model.bb[1]);
+	
+	cc = [0,0,0];
 
-$('#op-slider-id').slider({max:1, min:0, step:0.05, value:1, slide: changeOpacity, change: changeOpacity});
-$('#frame-slider-id').slider({max:100, min:1, step:1, value:1, slide: changeFrame, change: changeFrame});
+	cc[0] = (model.bb[3] + model.bb[0]) /2;
+	cc[1] = (model.bb[4] + model.bb[1]) /2;
+	cc[2] = (model.bb[5] + model.bb[2]) /2;
+		
+	cc[0] = Math.round(cc[0]*1000)/1000;
+	cc[1] = Math.round(cc[1]*1000)/1000;
+	cc[2] = Math.round(cc[2]*1000)/1000;
+	
+	if(maxDim != 0) {
+		var d = 1.5 * maxDim / (Math.tan(view.cameraman.active._fov * Math.PI / 180));
+		if (axisIndex == 0) {
+			view.cameraman.active.setPosition([cc[0]+d, cc[1], cc[2]]);
+			view.cameraman.active.setFocalPoint(cc);
+			view.cameraman.active.setElevation(0);
+			view.cameraman.active.setAzimuth(90);
+			view.cameraman.active.setRoll(90);
+		} else if (axisIndex == 1) {
+			view.cameraman.active.setPosition([cc[0], cc[1]+d, cc[2]]);
+			view.cameraman.active.setFocalPoint(cc);
+			view.cameraman.active.setElevation(90);
+			view.cameraman.active.setAzimuth(90);
+			view.cameraman.active.setRoll(90);
+		} else if (axisIndex == 2) {
+			view.cameraman.active.setPosition([cc[0], cc[1], cc[2]+d]);
+			view.cameraman.active.setFocalPoint(cc);
+			view.cameraman.active.setElevation(0);
+			view.cameraman.active.setAzimuth(0);
+			view.cameraman.active.setRoll(0);
+		}
+	}
+	
+	
+}
+
+
 $('#pointsize-slider-id').slider({max:30, min:1, step:1, value:10, slide: changePointSize, change: changePointSize});
 $('#slice-slider-id').slider({max:1, min:0, step:1, value:1, slide: changeSlice, change: changeSlice});
 
