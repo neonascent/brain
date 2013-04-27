@@ -1,0 +1,360 @@
+<html>
+<head>
+<meta name='Diego Cantor' content='Voxelent: The best WebGL platform yet'>
+<meta name='copyright' content='&copy 2013'>
+<meta name='robots' content='all'>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name='keywords' content='webgl, webgl platform, medical imaging, webgl api'>
+
+<link rel='stylesheet' type='text/css' href='css/jquery-ui-bs/theme.css'/>
+
+<script src="lib/jquery.js" type="text/javascript"> </script>
+<script src="lib/jquery-ui.js" type="text/javascript"> </script>
+<script type='text/javascript' src='lib/voxelent_v0.89.5.js'> </script>
+<script type='text/javascript' src='lib/vox-gui_v0.1.js'> </script>
+
+<title>Voxelent - Demo Brain</title>
+<script type='text/javascript' id='code-js'>
+var animation;
+
+	function padToFour(number) {
+	  if (number<=9999) { number = ("000"+number).slice(-4); }
+	  return number;
+	}
+    
+	function runVoxApp(){
+		
+		
+		vxl.go.notifier.subscribe([vxl.events.MODELS_LOADED, vxl.events.SCENE_UPDATED], this);
+	    
+	    vxl.api.loadLUTS('assets/tables');
+	    
+	
+	    var view 	= vxl.api.setup('view-1');  // as there are no other views, this one becomes vxl.c.view
+	    vxl.c.view.setBackgroundColor(0.0,0.0,0.0); // background to black
+	    var gui = new vxlGUI(vxl.c.view); //and can be used here
+	    
+	    
+	    
+	    // set up list
+	   	
+	    
+	   	var list = new Array("anatomy_xyz_mapped_to_rgb.json",
+	   			"map_anatomy_to_x.json",
+	   			"map_anatomy_to_y.json",
+	   			"map_anatomy_to_z.json",
+	   			"map_anatomy_to_M1.json","map_anatomy_to_M2.json",
+	   			"map_anatomy_to_M3.json","map_anatomy_to_M4.json",
+	   			"map_anatomy_to_M5.json",
+	   			"map_anatomy_to_M1_M2_M3.json",
+	   			"map_anatomy_to_M1_M2_M4.json",
+	   			"map_anatomy_to_M1_M2_M5.json",
+	   			"map_anatomy_to_M1_M3_M4.json",
+	   			"map_anatomy_to_M1_M3_M5.json",
+	   			"map_anatomy_to_M1_M4_M5.json",
+	   			"map_anatomy_to_M2_M3_M4.json",
+	   			"map_anatomy_to_M2_M3_M5.json",
+	   			"map_anatomy_to_M2_M4_M5.json",
+	   			"map_anatomy_to_M3_M4_M5.json",
+	   			"manifold_1_2_3_to_anatomy_1_2_3.json",
+	   			"manifold_1_2_4_to_anatomy_1_2_3.json",
+	   			"manifold_1_2_5_to_anatomy_1_2_3.json",
+	   			"manifold_1_3_4_to_anatomy_1_2_3.json",
+	   			"manifold_1_3_5_to_anatomy_1_2_3.json",
+	   			"manifold_1_4_5_to_anatomy_1_2_3.json",
+	   			"manifold_2_3_4_to_anatomy_1_2_3.json",
+	   			"manifold_2_3_5_to_anatomy_1_2_3.json",
+	   			"manifold_2_4_5_to_anatomy_1_2_3.json",
+	   			"manifold_3_4_5_to_anatomy_1_2_3.json"
+
+
+	   	);
+	    
+	    /*
+	    var list = new Array();
+	    var framecount = 3;
+	    
+	    for (i = 1; i < (framecount + 1); i++) {
+	    	list.push("cortex"+padToFour(i)+".json");
+	    }*/
+	    
+	    
+	    var map = [];
+	    var frame;
+	    for (i = 1; i < (list.length + 1); i++) {
+   	    	frame = new Array();
+	    	frame.push(list[i-1]);
+	    	map["frame"+i] = frame;
+	    }
+	   
+	    
+	    $('#frame-slider-id').slider({max:list.length+1});
+	  
+	    vxl.api.load(list,'assets/models/brain',vxl.def.model.loadingMode.LATER);
+	    
+	    // default to vxl.pointSize =  10
+	    vxl.pointSize =  10;
+   
+	    //Create the animation object
+		animation = new vxlFrameAnimation(map);
+		
+		//Tell the scene to run the animation 
+		view.scene.setAnimation(animation);
+		
+		/* var pm = view.renderer.pm;
+		    pm.setUniform("uTranslation",[0,0,0]);
+		    pm.setUniform("uTranslate",false);
+		    pm.setUniform("uLightSpecular",[0.5,0.5,0.5,1]);
+		    pm.setUniform("uLightAmbient",[0,0,0,1]);
+			pm.setUniform("uLightDiffuse",[1,1,1,1]);
+			pm.setUniform("uLightPosition",[0,50,500]);
+			pm.setUniform("uUpdateLight", false);
+			pm.setUniform('uMaterialSpecular', [1.0,1.0,1.0,1.0]);
+		    pm.setUniform('uMaterialAmbient', [1.0,1.0,1.0,1.0]);
+		    
+		    */
+		    view.start();
+		    
+		
+		
+	    //vxl.c.view.start();
+	    
+	    
+	    
+		
+	   
+	    
+	    
+	}
+	
+	function handleEvent(event, src){
+		if (event == vxl.events.SCENE_UPDATED) {
+            var loaded = src._actors.length;
+            $('#status').html('Objects loaded: ' + loaded + ' out of 60');
+        }
+		else if (event == vxl.events.MODELS_LOADED){
+        	vxl.api.setLookupTable('hsv');
+        	vxl.c.camera.longShot();
+        	vxl.api.pointsON();
+        	//vxl.api.boundingBoxON();
+        	$('#overlay-div').fadeIn(3000);
+        	
+            if (navigator.platform.toUpperCase().indexOf("MAC") == 0){
+            	$("#zoom").html("Command + Click: dollying");
+            	$("#pan").html("Shift + Click: panning");
+            	$("#roll").html("Command + Shift + Click: roll");
+            }
+            
+             setupLUTSelector();  
+             
+             updateSliceSegments();
+             // start animation
+            // animation.start(0.5);
+        	
+    	}
+	    
+	    
+	}
+	
+	/**
+     * Creates the dropdown selector from which lookup tables can be selected
+     */
+    function setupLUTSelector(){
+    
+    var tables = vxl.api.getLookupTables();
+    var options = ",";
+    
+    for (var i=0;i<tables.length;i+=1){
+        options += '<option value=\"'+tables[i]+'\">'+tables[i]+'</option>';
+    }
+    
+    $('#lutPicker').html(options);
+    $('#lutPicker').change(function(){
+        vxl.api.setLookupTable($('#lutPicker').val());
+    });
+    
+ }; 
+</script>
+        
+<style type="text/css">
+.show {
+
+     position: relative;
+}
+
+.overlay {
+    background: rgba(100,100,100,0.5);
+    padding: 10px;
+    width: 190px;
+    height:40%;
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    font-size:12px;
+    font-family: Arial,Helvetica;
+    color: white;
+    display: none;
+}
+
+.overlay p {
+    padding-left:10px;
+    padding-right:10px;
+}
+
+.overlay select{
+   background: #333;
+   color: #BCBCBC;
+   width: 100px;
+   padding: 5px;
+   font-size: 13px;
+   height: 30px;
+   border: 0px;
+}
+
+</style> 
+
+</head>
+<body onload='runVoxApp()'>
+
+<div class='show'>
+<canvas id = 'view-1' width='1200' height='600'>
+	<p>
+		Your browser does not support WebGL :-(
+	</p>
+</canvas>
+<div id='overlay-div' class='overlay'>
+	  <p> Double Click: long shot</p>
+      <p id='zoom'> Ctrl + Left Click: dollying</p>
+      <p id='pan' > Shift + Left Click: panning</p>
+      <p id='roll'>Ctrl + Shift + Left Click: roll</p>
+      <p>
+          Opacity: <div id='op-slider-id'> </div>
+      </p>
+      <p>
+          Point Size: <div id='pointsize-slider-id'> </div>
+      </p>
+      <p id='frame'>select<br></p>
+      <p>
+          Time segment: <div id='frame-slider-id'> </div>
+      </p>
+      <p>
+          Slice axis: <select id='axisPicker' onChange="changeAxis();">
+          <option value=-1>none</option>
+          <option value=0>x axis</option>
+          <option value=1>y axis</option>
+          <option value=2>z axis</option>
+          </select>
+         
+      </p>
+      <p>
+          slice: <div id='slice-slider-id'> </div>
+      </p>
+      <select id='lutPicker'></select>
+    </div>  
+</div>
+
+<script>
+//JQuery UI code
+
+function changeOpacity(){
+    var v = $('#op-slider-id').slider('value');
+    
+    var gl = vxl.c.view.renderer.gl;
+    
+    if (v < 1){
+        //gl.disable(gl.DEPTH_TEST);
+        gl.enable(gl.BLEND);
+        gl.enable(gl.CULL_FACE);
+        gl.cullFace(gl.BACK);
+        vxl.api.setUniformDefault('lambert','uLightDiffuse',[0.5,0.5,0.5,1.0]);
+    }
+    else{
+        //gl.enable(gl.DEPTH_TEST);
+        gl.disable(gl.BLEND);
+        gl.disable(gl.CULL_FACE);
+        vxl.api.setUniformDefault('lambert','uLightDiffuse',[1.0,1.0,1.0,1.0]);
+    }
+    
+    vxl.api.setPropertyForAll('opacity', v);    
+}
+
+function changePointSize(){
+	var v = $('#pointsize-slider-id').slider('value');
+	// actor.renderer.pm.setUniform("uPointSize", 5);
+	vxl.pointSize =  v;
+
+}
+
+function changeFrame(){
+	var v = $('#frame-slider-id').slider('value');
+
+    if (animation.isValidFrame(v)) {
+    	animation.stop();
+    	try {
+    		animation.setFrame(v);
+    	} catch (e) {
+    		
+    	}
+    	var actorname = animation.actorByFrameMap[animation.activeFrame][0];
+    	var framename = actorname.replace(/_/g," ").replace(".json","");
+    	updateSliceSegments();
+    	$('#frame').html("frame: "+framename );
+    }
+    return true;
+}
+
+function updateSliceSegments() {
+	if (typeof animation != 'undefined') {
+		var axis = parseInt($('#axisPicker').val());
+		if (axis > -1) {
+			var actorname = animation.actorByFrameMap[animation.activeFrame][0];
+			// get actor bounding box
+			var model = vxl.api.getActorByName(actorname).model;
+			
+			$('#slice-slider-id').removeAttr('disabled');
+			$('#slice-slider-id').slider({max:model.bb[axis+3], min:model.bb[axis], enabled: true});
+		} else {
+			$('#slice-slider-id').attr('disabled', 'disabled');
+		}
+	}
+}
+
+function  changeSlice(){
+	var v = $('#slice-slider-id').slider('value');
+
+	var actorname = animation.actorByFrameMap[animation.activeFrame][0];
+   	// get actor bounding box
+   	var model = vxl.api.getActorByName(actorname).model;
+   	var axis = parseInt($('#axisPicker').val());
+   	for (i = 0; i < (model.vertices.length + 1); i++) {
+    	if (model.vertices[i] < -10000) {
+   			model.vertices[i] = model.vertices[i] + 12000;
+   		}
+    }
+   	
+   	if (axis > -1) {
+   		for (i = axis; i < (model.vertices.length - 1); i=i+3) {
+   	    	if (model.vertices[i] != v) {
+   	    		model.vertices[i] = model.vertices[i] - 12000;
+   	   		}
+   	    }
+   	}
+    
+    return true;
+}
+
+function changeAxis() {
+	updateSliceSegments();
+	changeSlice();
+}
+
+
+$('#op-slider-id').slider({max:1, min:0, step:0.05, value:1, slide: changeOpacity, change: changeOpacity});
+$('#frame-slider-id').slider({max:100, min:1, step:1, value:1, slide: changeFrame, change: changeFrame});
+$('#pointsize-slider-id').slider({max:30, min:1, step:1, value:10, slide: changePointSize, change: changePointSize});
+$('#slice-slider-id').slider({max:1, min:0, step:1, value:1, slide: changeSlice, change: changeSlice});
+
+
+</script>
+</body>
+</html>

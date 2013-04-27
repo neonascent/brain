@@ -1,0 +1,639 @@
+-------------------------------------------------------------------------------------------
+VERSION 0.89.5 - Work in progress
+-------------------------------------------------------------------------------------------
+
+KEY ACTIONS
+------------
+
+Now keys can be programmed to perform customized operations. See demo-camera-management.html: 
+
+
+view.interactor.addKeyAction('W', function()....)
+view.interactor.addKeyAction('N', function()....)
+
+key actions are enabled by default. Key actions can be disabled with:
+
+view.interactor.enableKeyActions(false);
+
+
+DISABLING FULLSCREEN MODE
+--------------------------
+
+Fullscreen mode can be enabled/disabled with:
+
+view.enableFullScreen()
+view.disableFullScreen()
+
+these instructions don't take the view to fullscreen mode but instead control how the view
+answers fullscreen requests.
+
+
+
+
+-------------------------------------------------------------------------------------------
+VERSION 0.89.4 - EXTERNAL SHADERS
+-------------------------------------------------------------------------------------------
+
+EXTERNAL SHADERS
+---------------------------
+In this version we are making possible to design and use your own shaders by embedding
+ESSL code in a voxelent web page.
+
+please check the demo-bouncing-balls.html code to see how this is possible.
+
+CHANGES TO PROGRAMS
+-----------------------------
+the new class vxlProgram represents a one to one mapping between a JavaScript object and a ESSL program
+
+the old vxlProgram class has been renamed to vxlProgramManager given that its operations deal
+with handling actual ESSL programs.
+
+
+ENFORCING PROGRAMS
+---------------------------------
+
+vxl.api.setProgram(view, vxl.def.glsl.lambert)
+
+is replaced instead by:
+
+vxl.api.setProgram(view, vxl.go.essl.lambert);
+
+
+Other programs available in this version are:
+
+vxlBlenderProgram (vxl.go.essl.blender), 
+vxlBakeProgram (vxl.go.essl.bake), 
+vxlPhongProgram (vxl.go.essl.phong)
+
+When vxl.api.setProgram is used, the program is enforced (actors can't override the program of current use)
+until the program is released using
+vxl.api.releaseProgram()
+
+NEW CLASSES
+----------------------------------------
+vxlEngine: defines the minimum set of actions an engine should have
+vxlExternalEngine: used when the programs are defined on the hosting web page 
+vxlProgram: provides operations to load programs using DOM, JSON, AJAX.
+
+
+
+
+-------------------------------------------------------------------------------------------
+VERSION 0.89.3 - COMPLEX RENDERING: Renderables
+-------------------------------------------------------------------------------------------
+
+ACTOR UPDATES
+-------------------
+
+1. Some actor operations (property setters) now return the actor instance. 
+This allows the chain of commands pattern:
+
+for example:
+
+var actor = vxl.c.scene.getActorByName('sphere');
+actor.setColor(0.4,0.4,0.5).setPosition(3,3,3).setOpacity(0.5);
+
+CAMERA UPDATES
+-------------------------
+
+1. The normal axis of the vxlCamera has been replaced by the forward axis. This is just a change
+in syntax not in behaviour. This means that the internal property ._normal has been replaced by
+the internal property ._forward.
+
+2. Previous to this version, the camera object could not pass an elevation of 90 or -90 but instead
+the movement was restricted to avoid 'oscliations' due to the inability to determine the up direction
+this problem has been fixed by changing the code of the rotate method. The rotation now occurs
+with respect to the current camera coordinates and every time the camera axes are recalculated. 
+
+This mode of operation is captured by the vxl.def.camera.type.EXPLORING type which is now the mode
+by default.
+
+2. The methods lookAt(actor) and closeUp(actor) have been fixed!!
+
+3. The paning and translating methods have been fixed. They were not using the correct "up" vector
+after a 90 degree rotation.
+
+4. Translation tracking is fixed!
+
+TRACKER INTERACTOR UPDATES
+-----------------------------
+1. Now it is possible to use the Command key in Mac to perform dollying (zoom). It was tricky
+to use the control key on mac because in some cases it triggers a pop up depending on the
+browser version on Mac.
+
+From this version on, if you have a Mac, you can use Command key + mouse drag to perform dollying.
+
+PICKING
+------------
+1. The cell picker has been improved and the bug that it had has been corrected. (it was selecting
+wrong cells in some cases).
+
+2. Cell painting is much faster now (from 1.74 s down to 177ms). vxlCell.setColor()
+
+ACTOR GROUPS
+----------------
+Actors can be associated and handled as a whole using the new class vxlActorGroup. To create
+an actor group simply request it from the scene
+
+var scene = vxl.c.scene;
+var actorGroup = scene.createActorGroup("theNameOfTheActorGroup",listOfActors);
+
+then you can do things such as:
+
+actorGroup.setOpacity()
+actorGroup.setProperty('propertyName', propertyValue)
+
+Just like actor operations, actor group operations are chainable:
+
+actorGroup.setOpacity(0.4).setColor(0.3,0.4,0.2)
+
+API UPDATES
+----------------
+
+setProgram: new option to force it
+getProgram: this might be variable if an actor decides to change program it will capture
+the current program being used.
+
+Neww methods:
+
+setUniform(uniformName, value) -- affects the current program
+setUniformDefault(programID, uniformName, value) -- not necessarily in the current program. 
+                                                 -- overrides a value if the program has been loaded
+getUniformList()
+
+this way the programs can be configured from the API whether or not they are in use.
+
+The phong and texture tests reflect these changes (see test-phong.html and test-texture.html)
+
+HIGH RESOLUTION MODELS
+--------------------------
+1. Enabling flat shading and fast cell picking for high-res models.
+
+Models can be of the type vxl.def.model.type:SIMPLE, MESH, BIG_DATA
+This type identifies how much information has the model and how it should be treated by voxelent.
+
+vxlRenderEngine will use this type to determine if there are needs for renderable parts (vxlRenderable).
+
+
+MESH UPDATES
+-------------
+2. vxlCell now requires a reference to the vxlMesh it belongs and an index. This enables
+fast updating of the vxlMesh model (for instance to change the color of a cell)
+
+RENDERABLES
+-------------------------
+
+1. Renderables belong now to the vxlActor class. The idea behind it is to make sure that
+the actor representation on screen is different from the model This way we can have several actors
+based on the same model. Each one with different properties. For instance, two actors based on the
+same model but each one using a different lookup table. To achieve this, it is necessary that the colors are stored in the material
+of the actor (vxlMaterial) instead of using the vxlModel colors (which are used initially if they exist)
+
+The vxlRenderable reads the model information from vxlMesh model if the actor has one
+or from the actor model if it is of type big data.
+
+ENGINE
+-------------------------
+vxlRenderStrategy has been renamed to vxlRenderEngine
+
+
+LOADING VTK FILES USING AJAX
+-----------------------------
+
+1. Now the familiar vxl.api.load routine support VTK files too! 
+Before this release, VTK files could only be added through drag and drop.
+
+
+PERFORMANCE UPDATES
+-------------------
+1. Many for loops have been replaced by while loops counting down to zero. Classes updated:
+
+vxlRenderEngine, vxlScene
+
+2. Color matching in vxlPicker has been debugged and optimized
+
+
+-------------------------------------------------------------------------------------------
+VERSION 0.89.2 - UPDATES
+-------------------------------------------------------------------------------------------
+
+API UPDATES
+----------------------
+
+New methods:
+vxl.api.loadSequence('part',1,40,'/the/path');
+vxl.api.solidWireframeON(true|false);
+vxl.api.setFieldOfView(number [0-360]);
+
+Removed methods:
+
+vxl.api.setCameraDistance
+
+
+MATERIALS
+----------------------
+The concept of material has been added to voxelent. (See vxlMaterial on jsdocs).
+
+Each actor has now a material object that contains elements such as:
+
+- opacity
+- shininess
+- diffuse color
+- specular color
+- ambient color
+- texture
+- shading
+
+You can still change these properties through the respective set* methods in 
+vxlActor, 
+
+You can still query these propertyes through vxlActor.getProperty
+
+Additionally you can access the material and set the properties directly, like in:
+
+actor.material.shading = false
+
+
+
+
+
+
+Merging Lambert and Phong strategies
+----------------------------------------
+1. vxlLambertStrategy, vxlPhongStrategy, vxlRenderStrategy and vxlBasicStrategy
+are now merged into vxlRenderStrategy
+
+2. In both vxl.api.setProgram and vxlRenderer.setProgram, the strategy now is optional.
+By default, the new class vxlRenderStrategy has combined both the former lambert and phong strategies.
+
+3. The vxl.def.glsl.phong and vxl.def.glsl.lambert are still current. 
+You can use them with vxlRenderer.setProgram()
+
+
+Actor shininess
+-----------------
+
+The actor shininess property has been defined. the default strategy evaluates this property
+to decide the proper program to use (lambert vs phong). See vxlDefaultStrategy
+
+actor.setShininess(100); //the lower the value the bigger the specular reflection
+actor.setProperty('shininess',200); //also can be set this way
+
+
+Update on vxlTexture
+---------------------
+
+1. The new methods setMagFilter and setMinFilter are available
+2. vxlTexture controls the case where the texture can't be load (see vxlTexture._onError)
+
+
+
+Object picking
+----------------------
+Now object picking is available as promised in 0.89.1. Use:
+
+	actor.setPicker(vxl.def.actor.picking.OBJECT, callback)
+
+where callback can be any function that receives two arguments:
+
+	function whateverNameCallbackFunction(actor, uid)
+
+
+Camera updates
+---------------------
+
+1. The methotd vxlCamera.setFieldOfView has been added, there is an accessible method on the API 
+(see vxl.api.setFieldOfView)
+
+3. LANDMARKS
+The old vxlCameraState has been replaced by vxlLandmark
+The new camera methods are available:
+
+   - setLandmark
+   - goTo
+   - getLandmarks
+   
+   
+
+
+
+-------------------------------------------------------------------------------------------
+VERSION 0.89.1 - Lots of stuff
+-------------------------------------------------------------------------------------------
+
+document_plexo.py has been renamed to document.py now all the subprojects get documented at the same 
+time so we don't miss anything.
+
+New classes in Nucleo
+----------------------
+vxlMesh: enables cell by cell operations (triangles) on raw geometry (model)
+vxlCell: elements of a vxlMesh
+vxlPicker: handles picking
+
+
+New classes in Plexo
+----------------------
+vxlDataStreamReader : encapsulates a data source
+   |
+   + -- vxlJSONReader: reads a JSON data source
+
+New classes in Nucleo
+----------------------
+vxlMesh
+vxlCell
+vxlPicker
+vxlPickerInteractor
+vxlRenderTarget
+
+Actor Updates
+---------------
+
+1. Face culling
+vxlActor supports now back face and front face culling:
+
+var actor = vxl.c.scene.getActorByName('sphere'); //from the current scene
+actor.cullFace(vxl.def.actor.cull.BACK); //hides the back face.
+
+2. New actor visualization methods
+
+Now actors can be visualized with the wireframe overlaid on top of the solid geometry:
+
+actor.setVisualizationMode(vxl.def.actor.mode.WIRED_AND_SOLID)
+
+Also flat shading is available:
+actor.setVisualizationMode(vxl.def.actor.mode.FLAT)
+
+   
+Picking API
+-------------
+
+Picking is available at the object and cell levels:
+
+actor._picking = vxl.def.actor.picking.CELL
+                 vxl.def.actor.picking.OBJECT (to be implemented in the follwing update)
+                 vxl.def.actor.picking.DISABLED
+                 
+
+actor.setPicker(type, callback)
+
+actor.isPickable() : returns true if actor._picking != vxl.def.actor.picking.DISABLED
+
+vxlPickerInteractor
+---------------------
+the vxlPickerInteractor is fully implemented. An example of how to use it is in the test-cell-picking.html file under demos 
+
+Strategy Pattern
+------------------
+The lambert and phong strategies are going to be merged in the next version. In this version
+you can see the intense effort made to make the lambert strategy more readable and easy to debug.
+
+
+
+
+-------------------------------------------------------------------------------------------
+VERSION 0.89 - Crocodile Rock - Elton John
+-------------------------------------------------------------------------------------------
+API Updates
+------------------
+1. New API methods getActor, getActorByUID, getProgram
+2. Actors and models names are stripped from the '.json' suffix.
+
+Model Updates
+------------------
+1.New model method getBoundingBoxVertices
+2.New model static method BB_INDICES
+
+
+Actor Updates
+--------------
+1. New visualization mode for actors (BOUNDING BOX). Check vxl.def.actor.mode
+   Phong and Lambert strategies updated to be able to render actor bounding boxes
+
+2. New actor method getHeight (it behaves nicely after actor rotation/scaling always returning y-length of bounding box)
+
+3. Actors hold now an internal matrix to represent geometric transformations (i.e. rotation, translations, scaling)
+   Position, Scale and Rotation should be updated by the provided methods.
+   
+4. setPosition, setScale have been updated to use the internal matrix representation 
+
+5. the methods translate and rotate, rotateX, rotateY, rotateZ have been implemented
+
+6. the method vxlActor._computeBoundingBox is called after geometric transformation operations
+
+7. vxlScene will not invoke vxlActor._computeBoundingBox when the bounding box of the scene wants to be established.
+In other words, each actor is responsible to keep its bounding box up to date
+
+8. new method vxlActor.getBoundingBoxVertices, vxlActor.getBoundingBox
+
+9. Some actor properties are made private ('_' prefix)
+
+Camera Updates
+---------------------
+1. Tracking cameras reviewed and implemented
+
+2. Camera to follow actor:
+
+var camera = vxl.c.camera;
+camera.setType(vxl.def.camera.type.TRACKING);
+camera.follow(actor)
+
+The camera needs to be positioned first. You can do:
+
+camera.closeUp(actor)
+
+then
+
+camera.follow(actor)
+Any actor translation will be applied to the camera 
+Also, the camera has tracking modes (see the docs on vxl.def.camera.tracking)
+ 
+3. New methods: roll, translate, closeUp, follow, unfollow
+
+4. the shot method is made private (_shot). 
+
+5. The camera variables are made private ('_' prefix)
+
+vxlTrackerInteractor updates
+------------------------------
+1. Remember double click evokes current camera longShot method
+2. Ctrl+Mouse is ZOOM
+3. Shift + Ctrl + Mouse is ROLL
+
+-------------------------------------------------------------------------------------------
+VERSION 0.88 - Casablanca premiers in NYC
+-------------------------------------------------------------------------------------------
+1. Texture mapping has been implemented
+
+2. The vxlActor and vxlModel classes have been updated to handle textures
+
+3. There is a new class: vxlTexture to handle the texture loading and selecting the texture filters
+
+4. The obj2json.py has been updated to handle textures
+
+5. The texture file (png, jpg image) should have dimensions (width, height) that are power of 2 and
+it should be in the same directory as the json file. 
+
+6. Fullscreen implemented. Click on the view so it acquires the focus then 
+press f (fullscreen) or x (exit fullscreen)
+
+-------------------------------------------------------------------------------------------
+VERSION 0.87.6 - Spilberg's JAWS
+-------------------------------------------------------------------------------------------
+1. Lookup tables are loaded BY DEMAND instead of loading them all when Voxelent loads.
+See vxl.api.loadLUTS 
+
+2. Main folder structure has been simplified:
+demos - docs - downloads - tools - source 
+
+3. There is a new folder where I will put all the importers that I am working on: tools - importers
+
+4. Default folders (vxl.def.lut.folder and vxl.def.model.folder) have been eliminated.
+The developer needs to specify where relatively to voxelent.js location the assets are.
+This applies for lookup tables and models. 
+
+There is a new parameter to set the path for a list of models to load. Check the documentation for
+vxl.api.load
+
+
+5. try catch block added to JQuery detection (VXL.js)
+
+6. The method vxl.api.subscribe has been added to the public API. 
+Kamyar: please how to use this in your tutorial
+
+7. Added support to render LINES! Check the cool DTI model in the VTK tutorial.
+
+8. Camera API simplified
+
+9. Dollying / Panning working nicely
+
+10. Gimbal lock fixed using quaternions. Thanks tojiro!!
+
+11. New Blender Program! now we can render blender objects (obj files + mtl files) --> JSON
+
+12. Added idea of rendering strategies to decouple the interaction between scenes and programs.
+We need to create a tutorial about this! It's reall cool!
+
+13. getProperty and setProperty methods implemented in vxlActor. The scope determines what copy to pass
+(model or actor property). We need to write a tutorial about this too.
+
+14. New demo testing the actor cloning mechanism (see demo-lookup-table.html)
+
+15. Publish/Subscribe mechanism updated for vxlNotifier
+
+16. vxlBakeStrategy and vxlBakeProgram added. Working on improving rendering performance by interleaving buffers
+
+17. Calculation of the bounding box is done BY DEMAND for performance reasons.
+
+18. API docs have been improved
+-------------------------------------------------------------------------------------------
+VERSION 0.87.5 - Mother's Day
+-------------------------------------------------------------------------------------------
+1. The method setAutomaticResize(bool) is added to view. It will only work if the canvas is inside a div?
+
+2. Each renderer calls the scene.render method and passes itself as an argument. In the last tests there are not collisions (nor flickering). 
+We expected some issues here because we are multithreading the access to the GPU (using JavaScript intervals one per renderer)... Hmmm
+let's see what the browsers vendors can do.
+
+3. In the process of updating demos [not done yet] When done we will have the 0.88 version and then they will be available again in the website
+
+4. Multi-view demo was added.
+
+5. Voxelent uses now glMatrix! yay! Thank you Brandon.
+
+6. The python packager generates the unminified and the minified voxelent lib.
+
+
+-------------------------------------------------------------------------------------------
+VERSION 0.87 - Kitware Visit
+-------------------------------------------------------------------------------------------
+1. The folder tutorials was renamed to demos
+2. The demos were renamed to eliminate the word 'demo' from the filename
+3. The demo hello.html and sphere.html were modified:
+* hello.html adds one line to set up the camera to a reasonable distance
+* sphere.html shows how the JS window object can listen for Voxelent events
+
+4. python tools were renamed using the underscore instead of the dash. For instance:
+vxl-documenter.py was renamed to vxl_documenter.py. The goal is to allow calling
+modules from other python modules (not possible with a dash in the name of the module).
+
+The new python module vxl_pack_and_document.py was created
+
+5. The demos: picking, multiview and bouncing balls need to be updated with the latest 
+voxelent version. They have OLD CODE.
+
+
+-------------------------------------------------------------------------------------------
+VERSION 0.86 - Family Day
+-------------------------------------------------------------------------------------------
+1. All the references to vxlAsseManager have been replaced by vxlModelManager. The goal of 
+this change is to unify the ontology (Asset, Model).
+
+2. vxl.def.asset has been merged into vxl.def.model
+
+3. The method vxl.api.loadAssets has been changed to vxl.api.load
+
+4. The uniform 'uUseLightTranslation' is set to true by default in the phong and diffuse shaders
+
+5. vxlActor.setMode changed to vxlActor.setVisualizationMode
+
+6. Tools are renamed from vox- to vxl- for naming consistency
+
+7. vxlCameraInteractor disappears. vxlViewListener and vxlCameraInteractor are integrated into
+vxlViewInteractor.
+
+8. The folder view is created in the source code. It groups vxlView, vxlViewInteractor and the
+interactors folder
+
+9. The interactors now descend from vxlViewInteractor
+
+10. vxlTrackballCameraInteractor is now known as vxlTrackerInteractor
+
+11. vxlView has now the method setInteractor(i:vxlViewInteractor):void
+
+12. Now the models and the actor names do not carry the suffix .json
+
+13. vxlActor.setPosition and vxlActor.setScale are created
+
+14. FOV, Z_NEAR and Z_FAR are now vxlCamera properties
+
+-------------------------------------------------------------------------------------------
+VERSION 0.85 - Diego's Birthday
+-------------------------------------------------------------------------------------------
+1. Ambient Lights were removed from vxlView and vxl.api
+This is an attribute that is dependent from the selected GLSL program and it should not be here.
+
+2. The method vxlActor.clone was created. YAY!
+
+3. The auxiliary Scene objects (vxlAxis, vxlBoundingBox, vxlFloor) were removed from the
+actor list inside vxlScene so they do not interfere with actor counting and actor operations
+
+4. The auxiliary Scene objects were encapsulated in a new class: vxlSceneToys
+
+5. The vxlActor.setColor method was removed. Again, this is GLSL program dependent.
+The more generic approach vxlActor.setProperty was created instead
+
+6. The method vxlScene.setColor was removed with no replacement
+
+7.vxlProgram was updated. The syntax to enable/disable attributes and to refer to attribute
+pointers is simpler. Also the methods to register/load/use programs were updated.
+
+8. vxl.api was updated. The name of methods that referred to Current Objects (vxl.c) was updated. 
+For instance, instead of having vxl.api.getActiveCamera, now we have vxl.api.getCurrentCamera.
+This improves consistency in the ontology of the API.
+
+9. The documentation of the namespaces vxl, vxl.go, vxl.c, vxl.def and vxl.api was improved
+
+10. Actors can now be translated and scaled
+
+12. The code for vxlCamera was updated. The commented code that was not being used was removed
+
+13. The folder structure of the library was updated to include: API docs, tutorials, and minified versions.
+
+14. Actors can have different rendering programs
+
+-------------------------------------------------------------------------------------------
+VERSION 0.84 - The beatles arrive into JFK
+-------------------------------------------------------------------------------------------
+1. First version to offer in the website
+2. Support for multiple views accessing the same scene was included
+3. DS_Store (Mac metafiles) were removed from source control

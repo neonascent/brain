@@ -1,0 +1,243 @@
+<html>
+<head>
+<meta name='Diego Cantor' content='Voxelent: The best WebGL platform yet'>
+<meta name='copyright' content='&copy; 2013'>
+<meta name='robots' content='all'>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name='keywords' content='webgl, webgl platform, medical imaging, webgl api'>
+
+<title>Voxelent - iPhone test</title>
+
+<link rel='stylesheet' type='text/css' href='css/jquery-ui-bs/theme.css'/>
+<link rel="stylesheet" type="text/css" href="css/colorpicker.css" />
+
+<script src="lib/jquery.js" type="text/javascript"> </script>
+<script src="lib/jquery-ui.js" type="text/javascript"> </script>
+<script type='text/javascript' src='lib/voxelent_v0.89.5.js'> </script>
+<script type='text/javascript' src='lib/vox-gui_v0.1.js'> </script>
+<script type='text/javascript' src='lib/colorpicker.js'></script>
+
+
+
+<script type='text/javascript'>
+   var view;
+   var bodyColor = '3691c2';
+    function runVoxApp(){
+        
+        vxl.api.subscribe(vxl.events.MODELS_LOADED, this);
+
+        view = vxl.api.setup('view-1');
+       
+        
+        list = ['part1.json','part2.json','part3.json','part4.json','part5.json','part6.json','part7.json']
+        vxl.api.load(list,'assets/models/texture/phone');
+      	view.setBackgroundColor(0.2, 0.2, 0.2);
+        view.start();
+        view.cameraman.active.setPosition(0,0,8);
+        vxl.api.setUniformDefault(vxl.go.essl.phong.ID, "uLightDirection",[0,0,-1]);
+        $('#toggleView').click();
+        
+    }
+    
+    function handleEvent(event){
+        vxl.c.camera.longShot();
+        var body = vxl.api.getActorByName('part1.json');
+        var back = vxl.api.getActorByName('part4.json');
+        body.setColor([54/256,145/256,194/256]);
+        back.setColor([54/256,145/256,194/256]);
+        body.setShininess(330);
+        body.material.specular = [0.4,0.4,0.4,1.0];
+        back.setShininess(330);
+        back.material.specular = [0.4,0.4,0.4,1.0];
+         $('#overlay-div').fadeIn(1);
+    }
+    
+    
+    function animate(){
+        var camera = vxl.c.camera;
+        camera.rotate(1,1);
+        camera.refresh();
+    }
+
+
+</script>
+
+<script type="text/javascript">
+  //Google Analytics Script 
+  var _gaq = _gaq || []; _gaq.push(['_setAccount', 'UA-26954785-1']); _gaq.push(['_trackPageview']);  (function() {  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;     ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';     var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);   })();
+</script>
+
+<style type="text/css">
+
+
+.overlay {
+    background: rgba(90,90,90,0.9);
+    padding: 10px;
+    width: auto;
+    height: 80px;
+    position: fixed;
+    bottom: 0px;
+	left: 0px;
+	right: 0px;
+	font-size:12px;
+	font-family: Arial,Helvetica;
+	color: white;
+	display: none;
+	text-align: center ; 
+	margin-left: 0px;
+	margin-right: 0px;
+	border-radius: 0px;
+	box-shadow: 3px 3px 3px #888;
+}
+
+.overlay select{
+   background: #5A5A5A;
+   color: #BCBCBC;
+   width: 100px;
+   padding: 5px;
+   font-size: 13px;
+   height: 30px;
+   border: 0px;
+}
+
+.overlay #view-1-fps{
+    display:none;
+}
+
+html, body {
+  width:  100%;
+  height: 100%;
+  margin: 0px;
+}
+
+</style> 
+</head>
+<body onload='runVoxApp()' style="background-color: #333;" >
+	<div style="position:absolute; z-index:4"><a href='http://voxelent.com'><img src="css/img/voxelent_dark.png"/></a></div>
+	<canvas id = 'view-1'>
+		<p>
+			Your browser does not support WebGL :-(
+		</p>
+	</canvas>        
+	
+	<div id = 'overlay-div' class='overlay'>
+		<a href=#><div  id='toggleView' style="float:right;"><img id='viewBtn'  src="css/icons/hide.png"  style="width:25px; height:25px"></img></div></a>
+		<p></p><div /> 
+		<br />
+		<a href=#><div id='toggleAnimation'style="display:inline-block"><img id='animationBtn' src="css/icons/play.png"  style="width:40px; height:40px"></img></div></a>
+		<a href=# onclick='alert("You can change the pattern by selecting this icon");'><div id='togglePattern' style="display:inline-block"><img src="css/icons/texture.png"  style="width:40px; height:40px"></img></div></a>
+		<a href=#><div  id='topView' style="display:inline-block"><img src="css/icons/top.png"  style="width:40px; height:40px"></img></div></a>
+		<a href=# ><div id='sideView' style="display:inline-block"><img src="css/icons/side.png"  style="width:40px; height:40px"></img></div></a>
+		<a href=#><div  id='frontView' style="display:inline-block"><img src="css/icons/front.png"  style="width:40px; height:40px"></img></div></a>
+		<a href='mailto:vobot@voxelent.com'><div  id='email' style="display:inline-block"><img src="css/icons/email.png"  style="width:40px; height:40px"></img></div></a>
+		<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+			<div id="myColorSelector" class="colorSelector" style="display:inline-block;" >
+							<div style="background-color: rgb(54, 145, 194); margin-bottom: 1px;" ></div>
+			</div>
+			
+		
+	</div>
+	
+
+
+
+
+    
+<script>
+
+$('#myColorSelector').ColorPicker({ 
+    onSubmit: function(hsb, hex, rgb, el) { 
+   $(el).val(hex); 
+   $(el).ColorPickerHide(); 
+    
+ }, 
+ color: bodyColor, 
+    onShow: function (colpkr) { 
+        $(colpkr).fadeIn(500); 
+        return false; 
+    }, 
+    onHide: function (colpkr) { 
+        $(colpkr).fadeOut(500); 
+        return false; 
+    }
+	, 
+   onChange: function (hsb, hex, rgb) { 
+        bodyColor = hex;
+        $('#myColorSelector div').css('backgroundColor', '#' + hex); 
+        var c = [rgb.r/256,rgb.g/256,rgb.b/256]; 
+        var actor = vxl.api.getActorByName('part1.json');
+        actor.setColor(c);
+        actor = vxl.api.getActorByName('part4.json');
+        actor.setColor(c);
+    },
+     
+   onBeforeShow: function (colpkr) { 
+        $(colpkr).ColorPickerSetColor(bodyColor); 
+    } 
+	
+ });
+
+$('#toggleAnimation').click(
+    function(){
+        if ($('#animationBtn').attr('src')=="css/icons/pause.png"){
+            clearInterval(timer);
+			// change image
+			
+            $('#animationBtn').attr("src", "css/icons/play.png");
+			//$(this).css("display", "inline-block");
+        }
+        else {
+            timer = setInterval(animate,30);
+             $('#animationBtn').attr("src", "css/icons/pause.png");
+        }
+    }
+);
+
+$('#topView').click(
+    function(){
+		vxl.c.camera.longShot();
+		vxl.c.camera.setElevation(-90);
+	}
+);
+
+$('#sideView').click(
+    function(){
+	vxl.c.camera.longShot();
+	vxl.c.camera.setAzimuth(-90);
+	}
+);
+
+$('#frontView').click(
+    function(){
+	vxl.c.camera.longShot()	
+	}
+);
+
+$('#toggleView').click(
+    function(){
+        if ($('#viewBtn').attr('src')=="css/icons/hide.png"){
+			$('#overlay-div').animate({height: '15px'});
+            $('#viewBtn').attr("src", "css/icons/show.png");
+        }
+        else {
+			$('#overlay-div').animate({height: '80px'});
+             $('#viewBtn').attr("src", "css/icons/hide.png");
+        }
+    }
+);
+
+var fpsshown = false;
+$(document).keydown(function(event){
+   if (event.keyCode == 70){
+       if(fpsshown){
+            $('#view-1-fps').hide();
+       }
+       else{
+           $('#view-1-fps').show();
+       }
+       fpsshown = !fpsshown;
+   } 
+});
+</script>    
+</body>			
+</html>
