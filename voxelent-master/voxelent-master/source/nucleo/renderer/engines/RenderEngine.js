@@ -517,7 +517,7 @@ vxlRenderEngine.prototype._renderPoints = function(actor){
     
     pm.setUniform("uUseShading", false);
     
-    pm.setUniform("uPointSize", 5);//TODO: this can be an actor property?
+    pm.setUniform("uPointSize", vxl.pointSize);//TODO: this can be an actor property?
     this._enableColors(actor);
     gl.drawArrays(gl.POINTS,0, model.vertices.length/3);
 };

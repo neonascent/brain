@@ -45,6 +45,10 @@ try{
 */
 var vxl = {
 
+
+// global pointsize
+pointsize: 5,
+
 /**
 * Version
 * @namespace Voxelent Version

@@ -52,7 +52,6 @@ var vxl = {
 * @property {String} codename       the codename of the current version
 * @property {Array}  plugins        installed plugins if any
 */
-pointSize: 5,
 version : 
 {
     number: '0.89.5',
@@ -4270,7 +4269,7 @@ function vxlLandmark(name, camera) {
     this._matrix          = mat4.set(c._matrix, mat4.create());
     this._right           = vec3.set(c._right, vec3.create());
     this._up              = vec3.set(c._up, vec3.create());
-    this._normal          = vec3.set(c._normal, vec3.create());   
+    this._forward         = vec3.set(c._forward, vec3.create());   
     this._position        = vec3.set(c._position, vec3.create());
     this._focalPoint      = vec3.set(c._focalPoint, vec3.create());
     this._distanceVector  = vec3.set(c._distanceVector, vec3.create());
@@ -4303,7 +4302,7 @@ vxlLandmark.prototype.retrieve = function() {
     c._matrix          = mat4.set(this._matrix, mat4.create());
     c._right           = vec3.set(this._right, vec3.create());
     c._up              = vec3.set(this._up, vec3.create());
-    c._normal          = vec3.set(this._normal, vec3.create());   
+    c._forward         = vec3.set(this._forward, vec3.create());   
     c._position        = vec3.set(this._position, vec3.create());
     c._focalPoint      = vec3.set(this._focalPoint, vec3.create());
     c._distanceVector  = vec3.set(this._distanceVector, vec3.create());
@@ -9465,7 +9464,7 @@ vxlRenderEngine.prototype._renderPoints = function(actor){
     
     pm.setUniform("uUseShading", false);
     
-    pm.setUniform("uPointSize", vxl.pointSize);//TODO: this can be an actor property?
+    pm.setUniform("uPointSize", 5);//TODO: this can be an actor property?
     this._enableColors(actor);
     gl.drawArrays(gl.POINTS,0, model.vertices.length/3);
 };
@@ -9479,7 +9478,7 @@ vxlRenderEngine.prototype._renderLines = function(actor){
     var gl      = this.renderer.gl;
     var pm     = this.renderer.pm;
     var essl    = vxl.def.essl;
-    s
+    
     pm.setUniform("uUseShading", false);
      gl.bindBuffer(gl.ARRAY_BUFFER, buffers.vertex);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(actor.model.vertices), gl.STATIC_DRAW);

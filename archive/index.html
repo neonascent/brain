@@ -1,0 +1,29 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title></title>
+    <script type="text/javascript" src="archive-min.js"></script>
+    <script type="text/javascript">
+
+        var loader = new ZipLoader('path/files.zip');
+
+        loader.loadCSS('path/files.zip://style.css');
+        loader.loadScript('path/files.zip://jquery.js');
+
+        (function($) {
+            $(document).ready(function() {
+            	
+            	var data = loader.load('path/files.zip://brain.json');
+				 
+				alert(data)
+            	
+               // $("#temp").attr('src', loader.loadImage('files.zip://images/Resources.png'));
+            });
+        })(jQuery)
+
+    </script>
+</head>
+<body>
+    <img src="" alt="asd" id="temp" />
+</body>
+</html>

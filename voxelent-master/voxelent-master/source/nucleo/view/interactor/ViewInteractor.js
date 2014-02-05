@@ -52,6 +52,17 @@ vxlViewInteractor.prototype.connectView = function(view){
         interactor.onMouseDown(ev);
     };
 
+	if (window.addEventListener)
+		/** DOMMouseScroll is for mozilla. */
+		window.addEventListener('DOMMouseScroll', function(ev) {
+			interactor.onScroll(ev);
+		}, false);
+		
+	/** IE/Opera. */
+	document.onmousewheel = function(ev) {
+        interactor.onScroll(ev);
+    };
+	
     canvas.onmouseup = function(ev) {
         interactor.onMouseUp(ev);
     };

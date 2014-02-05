@@ -1,0 +1,204 @@
+<html>
+<head>
+<meta name='Diego Cantor' content='Voxelent: The best WebGL platform yet'>
+<meta name='copyright' content='&copy 2013'>
+<meta name='robots' content='all'>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name='keywords' content='webgl, webgl platform, medical imaging, webgl api'>
+
+<title>Voxelent - Object Picking Test</title>
+
+<link rel='stylesheet' type='text/css' href='css/jquery-ui-bs/theme.css'/>
+
+<script src="lib/jquery.js" type="text/javascript"> </script>
+<script src="lib/jquery-ui.js" type="text/javascript"> </script>
+
+<script src="../source/nucleo/vxl/VXL.js" type="text/javascript"> </script>
+<script src="../source/nucleo/vxl/API.js" type="text/javascript"> </script>
+<script src="../source/nucleo/vxl/Notifier.js" type="text/javascript"> </script>
+<script src="../source/nucleo/vxl/glMatrix.js" type="text/javascript"> </script>
+
+<script src="../source/nucleo/view/View.js" type="text/javascript"> </script>
+<script src="../source/nucleo/view/interactor/ViewInteractor.js" type="text/javascript"> </script>
+<script src="../source/nucleo/view/interactor/PickerInteractor.js" type="text/javascript"> </script>
+<script src="../source/nucleo/view/interactor/TrackerInteractor.js" type="text/javascript"> </script>
+
+<script src="../source/gui/GUI.js" type="text/javascript"> </script>
+<script src="../source/nucleo/animation/FrameAnimation.js" type="text/javascript"> </script>
+<script src="../source/nucleo/camera/Camera.js" type="text/javascript"> </script>
+<script src="../source/nucleo/camera/CameraManager.js" type="text/javascript"> </script>
+<script src="../source/nucleo/camera/Landmark.js" type="text/javascript"> </script>
+<script src="../source/nucleo/lookup/LookupTable.js" type="text/javascript"> </script>
+<script src="../source/nucleo/lookup/LookupTableManager.js" type="text/javascript"> </script>
+<script src="../source/nucleo/model/Model.js" type="text/javascript"> </script>
+<script src="../source/nucleo/model/ModelManager.js" type="text/javascript"> </script>
+<script src="../source/nucleo/model/reader/VTKReader.js" type="text/javascript"> </script>
+<script src="../source/nucleo/renderer/RenderTarget.js" type="text/javascript"> </script>
+<script src="../source/nucleo/renderer/Renderer.js" type="text/javascript"> </script>
+<script src="../source/nucleo/renderer/Transforms.js" type="text/javascript"> </script>
+<script src="../source/nucleo/renderer/engines/BakeEngine.js" type="text/javascript"> </script>
+<script src="../source/nucleo/renderer/engines/BlenderEngine.js" type="text/javascript"> </script>
+<script src="../source/nucleo/renderer/engines/Engine.js" type="text/javascript"> </script>
+<script src="../source/nucleo/renderer/engines/ExternalEngine.js" type="text/javascript"> </script>
+<script src="../source/nucleo/renderer/engines/RenderEngine.js" type="text/javascript"> </script>
+<script src="../source/nucleo/renderer/programs/Program.js" type="text/javascript"> </script>
+<script src="../source/nucleo/renderer/programs/BakeProgram.js" type="text/javascript"> </script>
+<script src="../source/nucleo/renderer/programs/BlenderProgram.js" type="text/javascript"> </script>
+<script src="../source/nucleo/renderer/programs/LambertProgram.js" type="text/javascript"> </script>
+<script src="../source/nucleo/renderer/programs/PhongProgram.js" type="text/javascript"> </script>
+<script src="../source/nucleo/renderer/programs/ProgramManager.js" type="text/javascript"> </script>
+<script src="../source/nucleo/scene/Actor.js" type="text/javascript"> </script>
+<script src="../source/nucleo/scene/ActorGroup.js" type="text/javascript"> </script>
+<script src="../source/nucleo/scene/Material.js" type="text/javascript"> </script>
+<script src="../source/nucleo/scene/Picker.js" type="text/javascript"> </script>
+<script src="../source/nucleo/scene/Renderable.js" type="text/javascript"> </script>
+<script src="../source/nucleo/scene/Scene.js" type="text/javascript"> </script>
+<script src="../source/nucleo/scene/Texture.js" type="text/javascript"> </script>
+<script src="../source/nucleo/scene/mesh/Cell.js" type="text/javascript"> </script>
+<script src="../source/nucleo/scene/mesh/Mesh.js" type="text/javascript"> </script>
+<script src="../source/nucleo/scene/toys/Axis.js" type="text/javascript"> </script>
+<script src="../source/nucleo/scene/toys/BoundingBox.js" type="text/javascript"> </script>
+<script src="../source/nucleo/scene/toys/Floor.js" type="text/javascript"> </script>
+<script src="../source/nucleo/scene/toys/Toys.js" type="text/javascript"> </script>
+
+
+<!-- plexo -->
+<script src="../source/plexo/DataStreamReader.js" type="text/javascript"> </script>
+<script src="../source/plexo/JSONReader.js" type="text/javascript"> </script>
+<script src="../source/plexo/Network.js" type="text/javascript"> </script>
+<script src="../source/plexo/SceneDescriptor.js" type="text/javascript"> </script>
+
+
+
+<!-- Josh -->
+<script type='text/javascript' src='../source/nucleo/view/interactor/vxlGrabTrackerInteractor.js'> </script>
+<script type='text/javascript'>
+
+var view, actor, mesh , pickerInteractor, currentInteractor;
+
+
+function runVoxApp(){
+    vxl.api.subscribe(vxl.events.MODELS_LOADED, this);
+    view = vxl.api.setup('view-1');
+    var list = ['cone.json','cylinder.json','sphere.json']; //"anatomy_xyz_mapped_to_rgb.json"
+    vxl.api.load(list,'assets/models/geometry');
+    view.start();
+    view.renderer.enableOffscreen();
+    pickerInteractor = new vxlPickerInteractor();
+    defaultInteractor = view.interactor;
+};
+
+function handleEvent(event){
+     
+    cone        = vxl.api.getActor('cone');
+    cylinder    = vxl.api.getActor('cylinder');
+    sphere      = vxl.api.getActor('sphere.json'); //can be called with the extension or without it
+
+    var mode = vxl.def.actor.mode;
+    var color = [0.7, 0.7, 0.7];
+    cone.setPosition(7,2,5);  
+    cone.rotateZ(45);
+    cone.setPicker(vxl.def.actor.picking.OBJECT,pickingCallback);
+    coneColor = cone.material.diffuse;
+    cone.setColor(color);
+
+    cylinder.setPosition(-10,2,5);
+    cylinder.setColor(0.7,0,0.1);
+    cylinder.rotateZ(-30);
+    cylinder.setPicker(vxl.def.actor.picking.OBJECT,pickingCallback);
+    cylinderColor = cylinder.material.diffuse;
+    cylinder.setColor(color);
+
+    sphere.setPosition(0,2,-5);
+    sphere.setColor(0,0.9,0.2);
+    sphere.setPicker(vxl.def.actor.picking.OBJECT,pickingCallback);
+    sphereColor = sphere.material.diffuse;
+    sphere.setColor(color);
+    
+    var cam = vxl.c.camera;
+    cam.setType(vxl.def.camera.type.ORBITING);
+    cam.longShot();
+    cam.setAzimuth(15);
+    cam.setElevation(-15);
+   
+
+    vxl.api.floorON(60,5);
+    
+    $('#overlay-div').fadeIn(3000);
+};
+
+
+function pickingCallback(actor, uid){
+    switch(actor.UID){
+        case cylinder.UID: actor.setColor(cylinderColor); break
+        case sphere.UID: actor.setColor(sphereColor); break;
+        case cone.UID: actor.setColor(coneColor); break;
+    }
+    console.info("The actor "+actor.name+" was selected");
+};
+
+document.onkeypress = function(e){
+    e = e || window.event;
+    var charCode = (typeof e.which == "number") ? e.which : e.keyCode;
+    
+    if (charCode == 112 || charCode  == 80) {
+        if ( view.interactor.UID == pickerInteractor.UID){
+            view.setInteractor(defaultInteractor);
+            console.info('default interactor active');
+        }
+        else{
+            view.setInteractor(pickerInteractor);
+            console.info('picker interactor active');
+        }    
+    }
+};
+
+
+</script>
+
+<style type="text/css">
+.show {
+
+     position: relative;
+}
+
+.overlay {
+    background: rgba(100,100,100,0.5);
+    padding: 10px;
+    width: 200px;
+    height: 25%;
+    position: absolute;
+    top: 5px;
+    right: 15px;
+    font-size:12px;
+    font-family: Arial,Helvetica;
+    color: white;
+    display: none;
+}
+
+.overlay p {
+    padding-left:10px;
+    padding-right:10px;
+}
+
+</style>
+
+</head>
+<body onload='runVoxApp()'>
+	<div><img src="css/img/voxelent.png" /></div>
+	<div>
+	<canvas id = 'view-1' width='1200' height='600'>
+		<p>
+			Your browser does not support WebGL :-(
+		</p>
+	</canvas>
+	<div id='overlay-div' class='overlay'>
+	  <p>Goal:</p>
+	  <p> 
+	      Switch to picking and select the objects on the scene.</p>
+	  <p> Make sure you check the console for messages</p>
+      <p>Use <b>p</b> to switch between tracking and picking interactors</p>
+    </div>  
+    </div>
+</body>			
+</html>

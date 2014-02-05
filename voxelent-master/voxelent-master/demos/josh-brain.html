@@ -10,8 +10,71 @@
 
 <script src="lib/jquery.js" type="text/javascript"> </script>
 <script src="lib/jquery-ui.js" type="text/javascript"> </script>
-<script type='text/javascript' src='lib/voxelent_v0.89.5.js'> </script>
-<script type='text/javascript' src='lib/vox-gui_v0.1.js'> </script>
+
+
+<script src="../source/nucleo/vxl/VXL.js" type="text/javascript"> </script>
+<script src="../source/nucleo/vxl/API.js" type="text/javascript"> </script>
+<script src="../source/nucleo/vxl/Notifier.js" type="text/javascript"> </script>
+<script src="../source/nucleo/vxl/glMatrix.js" type="text/javascript"> </script>
+
+<script src="../source/nucleo/view/View.js" type="text/javascript"> </script>
+<script src="../source/nucleo/view/interactor/ViewInteractor.js" type="text/javascript"> </script>
+<script src="../source/nucleo/view/interactor/PickerInteractor.js" type="text/javascript"> </script>
+<script src="../source/nucleo/view/interactor/TrackerInteractor.js" type="text/javascript"> </script>
+
+<script src="../source/gui/GUI.js" type="text/javascript"> </script>
+<script src="../source/nucleo/animation/FrameAnimation.js" type="text/javascript"> </script>
+<script src="../source/nucleo/camera/Camera.js" type="text/javascript"> </script>
+<script src="../source/nucleo/camera/CameraManager.js" type="text/javascript"> </script>
+<script src="../source/nucleo/camera/Landmark.js" type="text/javascript"> </script>
+<script src="../source/nucleo/lookup/LookupTable.js" type="text/javascript"> </script>
+<script src="../source/nucleo/lookup/LookupTableManager.js" type="text/javascript"> </script>
+<script src="../source/nucleo/model/Model.js" type="text/javascript"> </script>
+<script src="../source/nucleo/model/ModelManager.js" type="text/javascript"> </script>
+<script src="../source/nucleo/model/reader/VTKReader.js" type="text/javascript"> </script>
+<script src="../source/nucleo/renderer/RenderTarget.js" type="text/javascript"> </script>
+<script src="../source/nucleo/renderer/Renderer.js" type="text/javascript"> </script>
+<script src="../source/nucleo/renderer/Transforms.js" type="text/javascript"> </script>
+<script src="../source/nucleo/renderer/engines/BakeEngine.js" type="text/javascript"> </script>
+<script src="../source/nucleo/renderer/engines/BlenderEngine.js" type="text/javascript"> </script>
+<script src="../source/nucleo/renderer/engines/Engine.js" type="text/javascript"> </script>
+<script src="../source/nucleo/renderer/engines/ExternalEngine.js" type="text/javascript"> </script>
+<script src="../source/nucleo/renderer/engines/RenderEngine.js" type="text/javascript"> </script>
+<script src="../source/nucleo/renderer/programs/Program.js" type="text/javascript"> </script>
+<script src="../source/nucleo/renderer/programs/BakeProgram.js" type="text/javascript"> </script>
+<script src="../source/nucleo/renderer/programs/BlenderProgram.js" type="text/javascript"> </script>
+<script src="../source/nucleo/renderer/programs/LambertProgram.js" type="text/javascript"> </script>
+<script src="../source/nucleo/renderer/programs/PhongProgram.js" type="text/javascript"> </script>
+<script src="../source/nucleo/renderer/programs/ProgramManager.js" type="text/javascript"> </script>
+<script src="../source/nucleo/scene/Actor.js" type="text/javascript"> </script>
+<script src="../source/nucleo/scene/ActorGroup.js" type="text/javascript"> </script>
+<script src="../source/nucleo/scene/Material.js" type="text/javascript"> </script>
+<script src="../source/nucleo/scene/Picker.js" type="text/javascript"> </script>
+<script src="../source/nucleo/scene/Renderable.js" type="text/javascript"> </script>
+<script src="../source/nucleo/scene/Scene.js" type="text/javascript"> </script>
+<script src="../source/nucleo/scene/Texture.js" type="text/javascript"> </script>
+<script src="../source/nucleo/scene/mesh/Cell.js" type="text/javascript"> </script>
+<script src="../source/nucleo/scene/mesh/Mesh.js" type="text/javascript"> </script>
+<script src="../source/nucleo/scene/toys/Axis.js" type="text/javascript"> </script>
+<script src="../source/nucleo/scene/toys/BoundingBox.js" type="text/javascript"> </script>
+<script src="../source/nucleo/scene/toys/Floor.js" type="text/javascript"> </script>
+<script src="../source/nucleo/scene/toys/Toys.js" type="text/javascript"> </script>
+
+
+<!-- plexo -->
+<script src="../source/plexo/DataStreamReader.js" type="text/javascript"> </script>
+<script src="../source/plexo/JSONReader.js" type="text/javascript"> </script>
+<script src="../source/plexo/Network.js" type="text/javascript"> </script>
+<script src="../source/plexo/SceneDescriptor.js" type="text/javascript"> </script>
+
+
+
+<!-- Josh -->
+<script type='text/javascript' src='../source/nucleo/view/interactor/vxlGrabTrackerInteractor.js'> </script>
+
+
+
+
 
 <title>Voxelent - Demo Brain</title>
 <script type='text/javascript' id='code-js'>
@@ -23,6 +86,10 @@ var model;
 var camera;
 var actor;
 var axis;
+
+
+
+
 
 	function padToFour(number) {
 	  if (number<=9999) { number = ("000"+number).slice(-4); }
@@ -46,7 +113,7 @@ var axis;
 	    // set up list
 	   	
 	    
-	   	list = new Array("brain.json",
+	   	list = new Array(
 	   			"anatomy_xyz_mapped_to_rgb.json",
 	   			"map_anatomy_to_x.json",
 	   			"map_anatomy_to_y.json",
@@ -81,25 +148,25 @@ var axis;
 	   	);
 	  //3. Define animation map
 		var map = {
-			frame1 : ["anatomy_xyz_mapped_to_rgb.json", "brain.json"],
-			frame2 : ["map_anatomy_to_x.json", "brain.json"],
-			frame3 : ["map_anatomy_to_y.json", "brain.json"],
-			frame4 : ["map_anatomy_to_z.json", "brain.json"],
-			frame5 : ["map_anatomy_to_M1.json", "brain.json"],
-			frame6 : ["map_anatomy_to_M2.json", "brain.json"],
-			frame7 : ["map_anatomy_to_M3.json", "brain.json"],
-			frame8 : ["map_anatomy_to_M4.json", "brain.json"],
-			frame9 : ["map_anatomy_to_M5.json", "brain.json"],
-			frame10 : ["map_anatomy_to_M1_M2_M3.json", "brain.json"],
-			frame11 : ["map_anatomy_to_M1_M2_M4.json", "brain.json"],
-			frame12 : ["map_anatomy_to_M1_M2_M5.json", "brain.json"],
-			frame13 : ["map_anatomy_to_M1_M3_M4.json", "brain.json"],
-			frame14 : ["map_anatomy_to_M1_M3_M5.json", "brain.json"],
-			frame15 : ["map_anatomy_to_M1_M4_M5.json", "brain.json"],
-			frame16 : ["map_anatomy_to_M2_M3_M4.json", "brain.json"],
-			frame17 : ["map_anatomy_to_M2_M3_M5.json", "brain.json"],
-			frame18 : ["map_anatomy_to_M2_M4_M5.json", "brain.json"],
-			frame19 : ["map_anatomy_to_M3_M4_M5.json", "brain.json"],
+			frame1 : ["anatomy_xyz_mapped_to_rgb.json"],
+			frame2 : ["map_anatomy_to_x.json111"],
+			frame3 : ["map_anatomy_to_y.json"],
+			frame4 : ["map_anatomy_to_z.json"],
+			frame5 : ["map_anatomy_to_M1.json"],
+			frame6 : ["map_anatomy_to_M2.json"],
+			frame7 : ["map_anatomy_to_M3.json"],
+			frame8 : ["map_anatomy_to_M4.json"],
+			frame9 : ["map_anatomy_to_M5.json"],
+			frame10 : ["map_anatomy_to_M1_M2_M3.json"],
+			frame11 : ["map_anatomy_to_M1_M2_M4.json"],
+			frame12 : ["map_anatomy_to_M1_M2_M5.json"],
+			frame13 : ["map_anatomy_to_M1_M3_M4.json"],
+			frame14 : ["map_anatomy_to_M1_M3_M5.json"],
+			frame15 : ["map_anatomy_to_M1_M4_M5.json"],
+			frame16 : ["map_anatomy_to_M2_M3_M4.json"],
+			frame17 : ["map_anatomy_to_M2_M3_M5.json"],
+			frame18 : ["map_anatomy_to_M2_M4_M5.json"],
+			frame19 : ["map_anatomy_to_M3_M4_M5.json"],
 			frame20 : ["manifold_1_2_3_to_anatomy_1_2_3.json"],
 			frame21 : ["manifold_1_2_4_to_anatomy_1_2_3.json"],
 			frame22 : ["manifold_1_2_5_to_anatomy_1_2_3.json"],
@@ -110,7 +177,6 @@ var axis;
 			frame27 : ["manifold_2_3_5_to_anatomy_1_2_3.json"],
 			frame28 : ["manifold_2_4_5_to_anatomy_1_2_3.json"],
 			frame29 : ["manifold_3_4_5_to_anatomy_1_2_3.json"]
-			
 		};
 	    
 	    /*
@@ -132,7 +198,7 @@ var axis;
 	    }
 	   */
 	    
-	    $('#frame-slider-id').slider({max:list.length+1});
+	    //$('#frame-slider-id').slider({max:list.length+1});
 	  
 	    vxl.api.load(list,'assets/models/brain',vxl.def.model.loadingMode.LATER);
 	    
@@ -150,7 +216,9 @@ var axis;
 		//Tell the scene to run the animation 
 		view.scene.setAnimation(animation);
 		
-		/* var pm = view.renderer.pm;
+		
+		 var pm = view.renderer.pm;
+		 /*
 		    pm.setUniform("uTranslation",[0,0,0]);
 		    pm.setUniform("uTranslate",false);
 		    pm.setUniform("uLightSpecular",[0.5,0.5,0.5,1]);
@@ -162,18 +230,14 @@ var axis;
 		    pm.setUniform('uMaterialAmbient', [1.0,1.0,1.0,1.0]);
 		    
 		    */
-		    view.start();
-		    
+		view.start();
 		
-		
-	    //vxl.c.view.start();
-	    
-	    
-	    
-		
-	   
-	    
-	    
+		// setup my modified tracker
+		view.renderer.enableOffscreen();  // enable for "collision" grab
+	  
+		vxlGrabTrackerInteractor = new vxlGrabTrackerInteractor();
+		view.setInteractor(vxlGrabTrackerInteractor);
+			    
 	}
 	
 	function handleEvent(event, src){
@@ -185,6 +249,13 @@ var axis;
         	vxl.api.setLookupTable('hsv');
         	vxl.c.camera.longShot();
         	vxl.api.pointsON();
+			vxl.api.boundingBoxON();
+			
+			// turn on bounding box
+			// vxl.c.view.scene.setVisualizationMode(vxl.def.actor.mode.BOUNDING_BOX)
+			
+			
+			
         	//vxl.api.boundingBoxON();
         	$('#overlay-div').fadeIn(3000);
         	
@@ -195,10 +266,15 @@ var axis;
             }
             
              setupLUTSelector();  
-             vxl.api.getActorByName(list[0]).setVisualizationMode(vxl.def.actor.mode.WIREFRAME);
-             vxl.api.getActorByName(list[0]).setOpacity(0.05);
+             //vxl.api.getActorByName(list[0]).setVisualizationMode(vxl.def.actor.mode.WIREFRAME);
+             //vxl.api.getActorByName(list[0]).setOpacity(0.05);
              
-             model = vxl.api.getActorByName(list[1]).model;
+			 for (var i=0;i<list.length;i+=1){
+				vxl.api.getActorByName(list[i]).setPicker(vxl.def.actor.picking.OBJECT,pickingCallback);
+			 }
+			 
+             model = vxl.api.getActorByName(list[0]).model;
+			 
      	     //camera.follow(vxl.api.getActorByName(animation.actorByFrameMap[1][0])); //from the current scene);
              setupDatasetSelector();
              updateSliceSegments();
@@ -209,6 +285,15 @@ var axis;
 	    
 	    
 	}
+	
+	function pickingCallback(actor, uid){
+		switch(actor.UID){
+			case cylinder.UID: actor.setColor(cylinderColor); break
+			case sphere.UID: actor.setColor(sphereColor); break;
+			case cone.UID: actor.setColor(coneColor); break;
+		}
+		console.info("The actor "+actor.name+" was selected");
+	};
 	
 	/**
      * Creates the dropdown selector from which lookup tables can be selected
@@ -236,13 +321,13 @@ var axis;
  
 	 var options = ",";
 	 
-	 for (var i=1;i<list.length;i+=1){
+	 for (var i=0;i<list.length;i++){
 	     options += '<option value=\"'+(i)+'\">'+list[i].replace(/_/g," ").replace(".json","")+'</option>';
 	 }
 	 
 	 $('#datasetPicker').html(options);
 	 $('#datasetPicker').change(function(){
-	 	var v = parseInt($('#datasetPicker').val());
+	 	var v = parseInt($('#datasetPicker').val())+1;
 
 	     if (animation.isValidFrame(v)) {
 	     	animation.stop();
@@ -253,6 +338,10 @@ var axis;
 	     	}
 			// update model reference 
 			model = vxl.api.getActorByName(animation.actorByFrameMap[animation.activeFrame][0]).model;
+			
+			//focus camera
+			vxl.c.camera.closeUp(model); // Place the current camera in front of your model
+			
 	     	updateSliceSegments();
 	     }
 	     
@@ -314,7 +403,10 @@ var axis;
       <p>
           Point Size: <div id='pointsize-slider-id'> </div>
       </p>
-      <p>
+	  <p>
+          Opacity: <div id='op-slider-id'> </div>
+      </p>
+	  <p>
           Dataset<select id='datasetPicker'></select>
       </p>
       <p>
@@ -325,13 +417,14 @@ var axis;
           <option value=2>z axis</option>
           </select>
       </p>
-      <!-- <p><button type="button" onClick="resetView(axis);">Snap to Section</button></p>
-      <p> -->
-          <div id='slice'>Section</div><div id='slice-slider-id'> </div>
+      <!-- <p><button type="button" onClick="resetView(axis);">Snap to Section</button></p>-->
+      <p> 
+         <div id='slice'>Section</div><div id='slice-slider-id'> </div>
       </p>
       <p>
           Intensity Map<select id='lutPicker'></select>
       </p>
+	  
       
     </div>  
 </div>
@@ -362,6 +455,32 @@ function updateSliceSegments() {
 	}
 }
 
+function changeOpacity(){
+    var v = $('#op-slider-id').slider('value');
+    
+    var gl = vxl.c.view.renderer.gl;
+    
+    //if (v < 1){
+        //gl.disable(gl.DEPTH_TEST);
+        gl.enable(gl.BLEND);
+        //gl.enable(gl.CULL_FACE);
+        //gl.cullFace(gl.BACK);
+        //vxl.api.setUniformDefault('lambert','uLightDiffuse',[0.5,0.5,0.5,1.0]);
+    /*}
+    else{
+        //gl.enable(gl.DEPTH_TEST);
+        gl.disable(gl.BLEND);
+        gl.disable(gl.CULL_FACE);
+        vxl.api.setUniformDefault('lambert','uLightDiffuse',[1.0,1.0,1.0,1.0]);
+    }*/
+    
+    vxl.api.setPropertyForAll('opacity', v);    
+}
+
+$('#op-slider-id').slider({max:1, min:0, step:0.05, value:1, slide: changeOpacity, change: changeOpacity});
+
+
+
 function  changeSlice(){
 	var v = $('#slice-slider-id').slider('value');
 	$('#slice').html("Section ("+(v-minSection+1)+"/"+(maxSection-minSection+1)+ ")");
@@ -389,6 +508,7 @@ function  changeSlice(){
 function changeAxis() {
 	axis = parseInt($('#axisPicker').val());
 	resetView(axis);
+	
 	updateSliceSegments();
 	changeSlice();
 }

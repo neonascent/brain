@@ -101,7 +101,7 @@ vxlPickerInteractor.prototype._doWork = function(){
   while(i--){
         var coords = this.list.pop();
         var color  = rt.readPixel(coords[0], coords[1]);
-
+		document.title = "color[0] " + color[0] + " color[1] " + color[1] + " color[2] " + color[2] + " color[3] " + color[3];
         if (color[0] == 0 && color[1] == 0 && color[2] == 0 && color[3] ==0){
             continue;
         }
