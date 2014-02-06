@@ -40,9 +40,8 @@ function vxlGrabTrackerInteractor(){
 	this.dragging = false;
 	this.dragndrop = false;
 	this.isMac = vxl.util.isMac();
-	this.grabEnabled = true;
+	this.grabEnabled = false;
 	
-	this.addKeyAction('P', function(){this.grabEnabled=!this.grabEnabled; alert(this.grabEnabled);});
 	this.addKeyAction('F', function(view,cam){view.fullscreen(true);});
 	this.addKeyAction('X', function(view,cam){view.fullscreen(false);});
 	
@@ -50,11 +49,12 @@ function vxlGrabTrackerInteractor(){
 	// from vxlPickerInteractor
 	this.timerID = -1;
 	this.list = [];
-	this.rate = 600;
+	this.rate = 200;
 	
+	this.framebuffer = null;
 	
 	// set up checking
-	//this.timerID = setInterval((function(self) {return function() {self._doWork();}})(this),this.rate); 
+	this.timerID = setInterval((function(self) {return function() {self._doWork();}})(this),this.rate); 
 };
 
 
@@ -98,8 +98,8 @@ vxlGrabTrackerInteractor.prototype.onKeyDown = function(ev){
         switch(this.keyPressed){
               case 38:camera.changeElevation(10);  break;
               case 40:camera.changeElevation(-10); break;
-              //case 37:camera.changeAzimuth(-10);   break;
-			  case 37:camera;   break;
+              case 37:camera.changeAzimuth(-10);   break;
+			  //case 37:camera;   break;
               case 39:camera.changeAzimuth(10);    break;
               default: this.fireKeyAction(this.keyPressed);
         }
@@ -160,13 +160,21 @@ vxlGrabTrackerInteractor.prototype.onMouseUp = function(ev){
  */
 vxlGrabTrackerInteractor.prototype.onMouseDown = function(ev){
 	// test for collision
-	this.x             = ev.clientX;
-	this.y             = ev.clientY;
-	this.lastClikedX   = this.x;
-	this.lastClickedY  = this.y;
-	this.button        = ev.button;
-	this.dragging      = true;
+	if (this.grabEnabled) {
+		
+		this.view.canvas.style.cursor = "grabbing";
+		this.view.canvas.style.cursor = "-moz-grabbing";
+		this.view.canvas.style.cursor = "-webkit-grabbing";
+				
+		this.x             = ev.clientX;
+		this.y             = ev.clientY;
+		this.lastClikedX   = this.x;
+		this.lastClickedY  = this.y;
+		this.button        = ev.button;
+		this.dragging      = true;
+	}
 };
+
 
 /**
  *Reacts to the canvas onmousemove event 
@@ -218,37 +226,35 @@ vxlGrabTrackerInteractor.prototype.onMouseMove = function(ev){
 
 // 
 vxlGrabTrackerInteractor.prototype._doWork = function(){
-  var i = this.list.length;
-  var rt = this.view.renderer._renderTarget;
-  //if (i > 0) {
-	this.view.canvas.style.cursor = 'pointer'
-  //}
+  if (!this.dragging) {
   
-  while(i--){
-        var coords = this.list.pop();
-		document.title = "coords[0] " + coords[0] + " coords[1] " + coords[1];
-        var color  = rt.readPixel(coords[0], coords[1]);
-	
-		//document.title = "color[0] " + color[0] + " color[1] " + color[1] + " color[2] " + color[2] + " color[3] " + color[3];
-        if (color[0] == 0 && color[1] == 0 && color[2] == 0 && color[3] ==0){
-			continue;
-        }
-        
-		
-        var results = vxl.go.picker.query(color);
-        
-        if (results == null) continue;
-		
-        var actor  = this.view.scene.getActorByCellUID(results.uid);
-        
-        if (actor == null) { //try object UID
-            actor = this.view.scene.getActorByUID(results.uid);
-        }
-        
-        if (actor != null && actor.isPickable() && actor._pickingCallback != undefined){
-            actor._pickingCallback(actor, results.uid);
-        }
-  }
+	  var i = this.list.length;
+	  var gl = this.view.renderer.gl;
+	  var color = new Uint8Array(1 * 1 * 4);
+	 
+	  //while(i--){
+	  
+	  // last one
+	  if (i > 0) {
+			var coords = this.list[i-1];
+			gl.readPixels(coords[0],coords[1],1,1,gl.RGBA,gl.UNSIGNED_BYTE,color);
+					 
+			//document.title = "color[0] " + color[0] + " color[1] " + color[1] + " color[2] " + color[2] + " color[3] " + color[3];
+			if (color[0] == 0 && color[1] == 0 && color[2] == 0){
+				this.view.canvas.style.cursor = 'default';
+				this.grabEnabled = false;
+			} else {
+				this.view.canvas.style.cursor = "move";
+				this.view.canvas.style.cursor = "grab";
+				this.view.canvas.style.cursor = "-moz-grab";
+				this.view.canvas.style.cursor = "-webkit-grab";
+				
+				this.grabEnabled = true;
+			}
+			
+	  }
+	  this.list = [];
+	}
 };
 
 

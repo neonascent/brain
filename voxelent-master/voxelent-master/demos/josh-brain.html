@@ -80,9 +80,11 @@
 <script type='text/javascript' id='code-js'>
 var animation;
 var list;
+var pointScale;
 var view;
 var maxSection, minSection;
 var model;
+var modelIndex;
 var camera;
 var actor;
 var axis;
@@ -108,8 +110,9 @@ var axis;
 	    vxl.c.view.setBackgroundColor(0.0,0.0,0.0); // background to black
 	    var gui = new vxlGUI(vxl.c.view); //and can be used here
 	    
-	    
-	    
+	    // for grab
+	   
+		
 	    // set up list
 	   	
 	    
@@ -146,78 +149,25 @@ var axis;
 
 
 	   	);
-	  //3. Define animation map
-		var map = {
-			frame1 : ["anatomy_xyz_mapped_to_rgb.json"],
-			frame2 : ["map_anatomy_to_x.json111"],
-			frame3 : ["map_anatomy_to_y.json"],
-			frame4 : ["map_anatomy_to_z.json"],
-			frame5 : ["map_anatomy_to_M1.json"],
-			frame6 : ["map_anatomy_to_M2.json"],
-			frame7 : ["map_anatomy_to_M3.json"],
-			frame8 : ["map_anatomy_to_M4.json"],
-			frame9 : ["map_anatomy_to_M5.json"],
-			frame10 : ["map_anatomy_to_M1_M2_M3.json"],
-			frame11 : ["map_anatomy_to_M1_M2_M4.json"],
-			frame12 : ["map_anatomy_to_M1_M2_M5.json"],
-			frame13 : ["map_anatomy_to_M1_M3_M4.json"],
-			frame14 : ["map_anatomy_to_M1_M3_M5.json"],
-			frame15 : ["map_anatomy_to_M1_M4_M5.json"],
-			frame16 : ["map_anatomy_to_M2_M3_M4.json"],
-			frame17 : ["map_anatomy_to_M2_M3_M5.json"],
-			frame18 : ["map_anatomy_to_M2_M4_M5.json"],
-			frame19 : ["map_anatomy_to_M3_M4_M5.json"],
-			frame20 : ["manifold_1_2_3_to_anatomy_1_2_3.json"],
-			frame21 : ["manifold_1_2_4_to_anatomy_1_2_3.json"],
-			frame22 : ["manifold_1_2_5_to_anatomy_1_2_3.json"],
-			frame23 : ["manifold_1_3_4_to_anatomy_1_2_3.json"],
-			frame24 : ["manifold_1_3_5_to_anatomy_1_2_3.json"],
-			frame25 : ["manifold_1_4_5_to_anatomy_1_2_3.json"],
-			frame26 : ["manifold_2_3_4_to_anatomy_1_2_3.json"],
-			frame27 : ["manifold_2_3_5_to_anatomy_1_2_3.json"],
-			frame28 : ["manifold_2_4_5_to_anatomy_1_2_3.json"],
-			frame29 : ["manifold_3_4_5_to_anatomy_1_2_3.json"]
-		};
-	    
-	    /*
-	    var list = new Array();
-	    var framecount = 3;
-	    
-	    for (i = 1; i < (framecount + 1); i++) {
-	    	list.push("cortex"+padToFour(i)+".json");
-	    }*/
-	    
-	    /*
-	    var map = [];
-	    var frame;
-	    for (i = 1; i < (list.length + 1); i++) {
-   	    	frame = new Array();
-	    	frame.push(list[i-1]);
-	    	frame.push(list[0]);
-	    	map["frame"+i] = frame;
-	    }
-	   */
-	    
-	    //$('#frame-slider-id').slider({max:list.length+1});
-	  
+		
+		shareView = new Array(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1);  // reset view?
+		
+		// the point scales for these models
+		pointScale = new Array(
+				new Array(30, 1, 1, 10), // 
+				new Array(80, 5, 3, 35)
+		);
+		
+		
+
+	    // load these models
 	    vxl.api.load(list,'assets/models/brain',vxl.def.model.loadingMode.LATER);
-	    
-	    // default to vxl.pointSize =  10
-	    vxl.pointSize =  10;
-   
 	    
 	    camera = vxl.c.camera;
 	    //camera.setType(vxl.def.camera.type.TRACKING);
-	    //camera.setTrackingMode(vxl.def.camera.tracking.ROTATIONAL);
-	    
-	    //Create the animation object
-		animation = new vxlFrameAnimation(map);
+	    //camera.setTrackingMode(vxl.def.camera.tracking.ROTATIONAL);	
 		
-		//Tell the scene to run the animation 
-		view.scene.setAnimation(animation);
-		
-		
-		 var pm = view.renderer.pm;
+		var pm = view.renderer.pm;
 		 /*
 		    pm.setUniform("uTranslation",[0,0,0]);
 		    pm.setUniform("uTranslate",false);
@@ -233,8 +183,7 @@ var axis;
 		view.start();
 		
 		// setup my modified tracker
-		view.renderer.enableOffscreen();  // enable for "collision" grab
-	  
+			  
 		vxlGrabTrackerInteractor = new vxlGrabTrackerInteractor();
 		view.setInteractor(vxlGrabTrackerInteractor);
 			    
@@ -249,15 +198,9 @@ var axis;
         	vxl.api.setLookupTable('hsv');
         	vxl.c.camera.longShot();
         	vxl.api.pointsON();
-			vxl.api.boundingBoxON();
+			//vxl.api.boundingBoxON();  // turn on bounding box
 			
-			// turn on bounding box
-			// vxl.c.view.scene.setVisualizationMode(vxl.def.actor.mode.BOUNDING_BOX)
-			
-			
-			
-        	//vxl.api.boundingBoxON();
-        	$('#overlay-div').fadeIn(3000);
+			$('#overlay-div').fadeIn(3000);
         	
             if (navigator.platform.toUpperCase().indexOf("MAC") == 0){
             	$("#zoom").html("Command + Click: dollying");
@@ -269,15 +212,25 @@ var axis;
              //vxl.api.getActorByName(list[0]).setVisualizationMode(vxl.def.actor.mode.WIREFRAME);
              //vxl.api.getActorByName(list[0]).setOpacity(0.05);
              
+			 // initialise all as pickable
 			 for (var i=0;i<list.length;i+=1){
 				vxl.api.getActorByName(list[i]).setPicker(vxl.def.actor.picking.OBJECT,pickingCallback);
 			 }
 			 
-             model = vxl.api.getActorByName(list[0]).model;
+             // set initial model
+			 actor = vxl.api.getActorByName(list[0]);
+			 model = actor.model;
+			 showActor(actor);
+			 
+			
+			 modelIndex = 0;
+			 
+			 // default to vxl.pointSize =  10
+			 vxl.pointSize =  pointScale[shareView[modelIndex]][3];
 			 
      	     //camera.follow(vxl.api.getActorByName(animation.actorByFrameMap[1][0])); //from the current scene);
              setupDatasetSelector();
-             updateSliceSegments();
+             changeAxis();
              // start animation
             // animation.start(0.5);
         	
@@ -314,6 +267,13 @@ var axis;
         
  }; 
  
+ 	// show a particular actor
+	function showActor(tActor) {
+		for (var i=0;i<list.length;i+=1){
+			vxl.api.getActorByName(list[i]).setVisible(false);
+		}
+		tActor.setVisible(true);
+	}
  /**
   * Creates the dropdown selector from which lookup tables can be selected
   */
@@ -327,24 +287,32 @@ var axis;
 	 
 	 $('#datasetPicker').html(options);
 	 $('#datasetPicker').change(function(){
-	 	var v = parseInt($('#datasetPicker').val())+1;
+	 	var v = parseInt($('#datasetPicker').val());
 
-	     if (animation.isValidFrame(v)) {
-	     	animation.stop();
-	     	try {
-	     		animation.setFrame(v);
-	     	} catch (e) {
-	     		
-	     	}
-			// update model reference 
-			model = vxl.api.getActorByName(animation.actorByFrameMap[animation.activeFrame][0]).model;
+		actor = vxl.api.getActorByName(list[v]);
+		model = actor.model;
+		showActor(actor);
+		// update model reference 
+		model = vxl.api.getActorByName(list[v]).model;
+		
+		// moving between view groups?
+		if (shareView[modelIndex] != shareView[v]) {
+			// set correct Point scale
+			var thisPointScale = pointScale[shareView[v]];
+			$('#pointsize-slider-id').slider({max:thisPointScale[0], min:thisPointScale[1], step:thisPointScale[2], value:thisPointScale[3], slide: changePointSize, change: changePointSize});
+			// reset view
+			vxl.c.camera.closeUp(list[v]); // Place the current camera in front of your model
+			changeAxis();
+			if (shareView[modelIndex] == 1) { 
+				$('#brainMap').hide();
+			} else {
+				$('#brainMap').show();
+			}
 			
-			//focus camera
-			vxl.c.camera.closeUp(model); // Place the current camera in front of your model
-			
-	     	updateSliceSegments();
-	     }
-	     
+
+		}
+
+		modelIndex = v;
 	 });
  };
 </script>
@@ -359,7 +327,7 @@ var axis;
     background: rgba(100,100,100,0.5);
     padding: 10px;
     width: 190px;
-    height:40%;
+    height:400px;
     position: absolute;
     top: 5px;
     right: 5px;
@@ -400,14 +368,14 @@ var axis;
       <p id='zoom'> Ctrl + Left Click: dollying</p>
       <p id='pan' > Shift + Left Click: panning</p>
       <p id='roll'>Ctrl + Shift + Left Click: roll</p>
+	  <p>
+          Dataset<select id='datasetPicker'></select>
+      </p>
       <p>
           Point Size: <div id='pointsize-slider-id'> </div>
       </p>
 	  <p>
           Opacity: <div id='op-slider-id'> </div>
-      </p>
-	  <p>
-          Dataset<select id='datasetPicker'></select>
       </p>
       <p>
           Section axis<select id='axisPicker' onChange="changeAxis();">
@@ -424,7 +392,7 @@ var axis;
       <p>
           Intensity Map<select id='lutPicker'></select>
       </p>
-	  
+	  <p><img id="brainMap" src="./assets/images/brain-map.gif" width=190 height=131 style="display:none;"/></p>
       
     </div>  
 </div>
@@ -434,25 +402,17 @@ var axis;
 
 function changePointSize(){
 	var v = $('#pointsize-slider-id').slider('value');
-	// actor.renderer.pm.setUniform("uPointSize", 5);
 	vxl.pointSize =  v;
 
 }
 
 function updateSliceSegments() {
-	if (typeof animation != 'undefined') {
-		if (axis > -1) {
-			// get actor bounding box
-			maxSection = model.bb[axis+3];
-			minSection = model.bb[axis];
-			$('#slice-slider-id').slider('enable');
-			$('#slice-slider-id').slider({max:maxSection, min:minSection, enabled: true});
-			changeSlice();
-		} else {
-			$('#slice').html("Section");
-			$('#slice-slider-id').slider('disable');
-		}
-	}
+	// get actor bounding box
+	maxSection = model.bb[axis+3];
+	minSection = model.bb[axis];
+	$('#slice-slider-id').slider('enable');
+	$('#slice-slider-id').slider({max:maxSection, min:minSection, enabled: true});
+	changeSlice();
 }
 
 function changeOpacity(){
@@ -460,19 +420,8 @@ function changeOpacity(){
     
     var gl = vxl.c.view.renderer.gl;
     
-    //if (v < 1){
-        //gl.disable(gl.DEPTH_TEST);
-        gl.enable(gl.BLEND);
-        //gl.enable(gl.CULL_FACE);
-        //gl.cullFace(gl.BACK);
-        //vxl.api.setUniformDefault('lambert','uLightDiffuse',[0.5,0.5,0.5,1.0]);
-    /*}
-    else{
-        //gl.enable(gl.DEPTH_TEST);
-        gl.disable(gl.BLEND);
-        gl.disable(gl.CULL_FACE);
-        vxl.api.setUniformDefault('lambert','uLightDiffuse',[1.0,1.0,1.0,1.0]);
-    }*/
+    gl.enable(gl.BLEND);
+
     
     vxl.api.setPropertyForAll('opacity', v);    
 }
@@ -485,9 +434,6 @@ function  changeSlice(){
 	var v = $('#slice-slider-id').slider('value');
 	$('#slice').html("Section ("+(v-minSection+1)+"/"+(maxSection-minSection+1)+ ")");
 
-	var actorname = animation.actorByFrameMap[animation.activeFrame][0];
-   	// get actor bounding box
-   	model = vxl.api.getActorByName(actorname).model;
    	for (i = 0; i < (model.vertices.length + 1); i++) {
     	if (model.vertices[i] < -10000) {
    			model.vertices[i] = model.vertices[i] + 12000;
@@ -507,10 +453,15 @@ function  changeSlice(){
 
 function changeAxis() {
 	axis = parseInt($('#axisPicker').val());
-	resetView(axis);
-	
-	updateSliceSegments();
-	changeSlice();
+	if (axis > -1) {
+		resetView(axis);
+		updateSliceSegments();
+		changeSlice();
+	} else {
+		changeSlice();
+		$('#slice').html("Section");
+		$('#slice-slider-id').slider('disable');
+	}
 }
 
 function resetView(axisIndex) {
@@ -549,8 +500,6 @@ function resetView(axisIndex) {
 			view.cameraman.active.setRoll(0);
 		}
 	}
-	
-	
 }
 
 

@@ -66,7 +66,7 @@ vxlRenderer.prototype.getWebGLContext = function(){
 	
 	for (var i = 0; i < names.length; ++i) {
 		try {
-			WEB_GL_CONTEXT = canvas.getContext(names[i]);
+			WEB_GL_CONTEXT = canvas.getContext(names[i], {preserveDrawingBuffer: true});
 		} 
 		catch(e) {}
 		if (WEB_GL_CONTEXT) {
